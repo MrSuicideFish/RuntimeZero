@@ -108,12 +108,6 @@ public class RZNetworkManager : MonoBehaviour
         DontDestroyOnLoad( gameObject );
         SetNetworkState(NETWORK_STATE.DISCONNECTED.GetHashCode());
         Initialize( );
-
-        //if (!LoadScreen.LevelIsLoaded)
-        //{
-        //    PlayerPrefs.SetString("TargetSceneToLoad", "GenericArenaTest" );
-        //    LoadScreen.BeginLoadScene();
-        //}
     }
 
     public static void Initialize( )
@@ -139,6 +133,8 @@ public class RZNetworkManager : MonoBehaviour
         if ( PhotonNetwork.LeaveRoom( ) )
         {
             SetNetworkState(NETWORK_STATE.LOBBY.GetHashCode( ));
+            LoadedLevelName = "NetworkManagerTest";
+            LoadScreen.BeginLoadScene();
         }
     }
 
