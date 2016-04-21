@@ -11,6 +11,7 @@ public class PlayerController : MonoBehaviour
         -Player Functions ( Movement control, Mouse input, Interaction command, Fire Command)
     */
     Rigidbody myRB;
+    Transform myTrans;
 
     public int PlayerHp = 100;
     public int PlayerArmour = 0;
@@ -23,6 +24,7 @@ public class PlayerController : MonoBehaviour
     void Start()
     {
         myRB = GetComponent<Rigidbody>();
+        myTrans = GetComponent<Transform>();
     }
     // Update is called once per frame
     void Update()
@@ -49,16 +51,28 @@ public class PlayerController : MonoBehaviour
         {
             myRB.AddRelativeForce(Vector3.up * PlayerJumpForce);
         }
-        if (Input.GetMouseButton(1))
+        if (Input.GetMouseButton(0))
         {
-           
+            Fire();
         }
     }
 
 
     void Fire()
     {
-
+        Vector3 fwd = transform.TransformDirection(Vector3.forward);
+        RaycastHit myRay;
+        Debug.DrawRay(myRB.position, 200*fwd, Color.green);
+        Debug.Log("Imma gonna Fire MY LAZer!!");
+        if (Physics.Raycast(myRB.position, fwd, out myRay, 200000))
+        {
+            Debug.Log("I FIRED MY LAZZER!");
+            if (myRay.collider.gameObject.tag == "Enemy")
+            {
+                Debug.Log("HIT");
+               // Destroy(GetComponent("Rigidbody"));
+            }
+        }
     }
 
     void Interact()
