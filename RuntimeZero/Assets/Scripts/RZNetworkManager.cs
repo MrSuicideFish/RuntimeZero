@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
+using Photon;
 using UnityEngine.SceneManagement;
 
 public enum NETWORK_STATE
@@ -10,8 +11,11 @@ public enum NETWORK_STATE
     GAME
 }
 
-public class RZNetworkManager : MonoBehaviour
+public class RZNetworkManager : PunBehaviour
 {
+    //Singleton
+    public static RZNetworkManager Session { get; private set; }
+
     #region Flags
     public bool DebugMode = false;
     #endregion
@@ -57,7 +61,7 @@ public class RZNetworkManager : MonoBehaviour
                 {
                     if (GUILayout.Button("LaunchGame"))
                     {
-                        LaunchGame();
+                        PhotonNetwork.RPC(PhotonView.Get(this), "LaunchGame", PhotonTargets.AllBuffered, false);
                     }
                 }
             }
@@ -103,6 +107,14 @@ public class RZNetworkManager : MonoBehaviour
     }
     #endregion
 
+    void Awake()
+    {
+        if ( Session )
+        {
+            GameObject.Destroy( gameObject );
+        }
+    }
+
     void Start( )
     {
         DontDestroyOnLoad( gameObject );
@@ -139,7 +151,7 @@ public class RZNetworkManager : MonoBehaviour
     }
 
     [PunRPC]
-    public static void LaunchGame()
+    public void LaunchGame()
     {
         //Disable message queue
         PhotonNetwork.isMessageQueueRunning = false;
@@ -148,9 +160,10 @@ public class RZNetworkManager : MonoBehaviour
         if (PhotonNetwork.isMasterClient)
         {
             SetNetworkState((int) NETWORK_STATE.GAME);
-            LoadedLevelName = "GenericArenaTest";
-            PhotonNetwork.LoadLevel(0);
         }
+
+        LoadedLevelName = "GenericArenaTest";
+        PhotonNetwork.LoadLevel(0);
     }
 
     private static void SetNetworkState(int newNetworkState)
