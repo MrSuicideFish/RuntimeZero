@@ -28,6 +28,8 @@ public class RZNetworkManager : MonoBehaviour
             else
                 JoinRoom( );
         }
+
+        //GUI.Label(new Rect(0, 256, 128, 32), );
     }
 
     void Start( )
