@@ -47,10 +47,14 @@ public class RZGameMode : PunBehaviour
         {
             if (WaitingForReadyPlayers)
             {
+
                 bool allReady = true;
                 for (int i = 0; i < PhotonNetwork.playerList.Length; i++)
                 {
-                    allReady = ((string) PhotonNetwork.playerList[i].customProperties[0]) == "true";
+                    if( (string) PhotonNetwork.playerList[i].customProperties["IsReady"] == "false")
+                    {
+                        allReady = false;
+                    }
                 }
 
                 if (allReady)
@@ -63,14 +67,29 @@ public class RZGameMode : PunBehaviour
         }
     }
 
+    public virtual void OnGUI()
+    {
+        GUIStyle style = new GUIStyle();
+        style.fontSize = 75;
+
+        GUI.Label( new Rect( Screen.width / 2, Screen.height / 2, 500, 500 ), "Waiting For Players..." );
+        if (WaitingForReadyPlayers)
+        {
+            
+        }
+    }
+
     [PunRPC]
     public virtual void StartGame()
     {
-        print("Starting Game mode " + GameModeName);
-
-        if ( PhotonNetwork.isMasterClient )
+        if (PhotonNetwork.isMasterClient)
         {
+            print("Starting Game mode on Master" + GameModeName);
             WaitingForReadyPlayers = true;
+        }
+        else
+        {
+            print( "Starting Game mode on Client" + GameModeName );
         }
 
         RZNetworkManager.PlayerPropertiesHash["IsReady"] = "true";

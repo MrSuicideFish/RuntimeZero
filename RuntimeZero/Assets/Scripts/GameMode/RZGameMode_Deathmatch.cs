@@ -11,5 +11,12 @@ public class RZGameMode_Deathmatch : RZGameMode
         MinimumNumPlayers = 1;
         MaximumNumPlayers = 10;
         NumOfTeams = 1;
+
+        TimePerRound = 999999.9f;
+    }
+
+    public override void StartGame()
+    {
+        base.StartGame();
     }
 }
