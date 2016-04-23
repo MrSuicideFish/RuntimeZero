@@ -25,7 +25,6 @@ public class LoadScreen : MonoBehaviour
         if (Async_LoadLevelOperation != null && Async_LoadLevelOperation.isDone)
         {
             print("Level Load complete");
-            PhotonNetwork.isMessageQueueRunning = true;
             LevelIsLoaded = true;
 
             if (LevelFinishedLoadingAction != null)
