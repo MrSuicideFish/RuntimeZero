@@ -22,6 +22,7 @@ public class RZGameMode_Deathmatch : RZGameMode
 
         //Spawn this player
         //view.RPC("SpawnPlayer", PhotonTargets.AllBuffered, transform.position, Vector3.forward, id, PhotonNetwork.player);
-        PhotonNetwork.Instantiate("Players/TestPlayer", Vector3.zero, Quaternion.identity, 0);
+        Vector3 spawnLoc = new Vector3(Random.Range(0,20), 5, Random.Range(0,20));
+        PhotonNetwork.Instantiate("Players/TestPlayer", spawnLoc, Quaternion.identity, 0);
     }
 }
