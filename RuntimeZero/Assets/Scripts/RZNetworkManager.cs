@@ -231,9 +231,9 @@ public class RZNetworkManager : PunBehaviour
     static void OnNetworkLevelHasLoaded( string loadedLevel )
     {
         //Set this player as ready
-        Hashtable playerHash = new Hashtable();
-        playerHash[0] = "";
-        PhotonNetwork.player.SetCustomProperties(new Hashtable());
+        //Hashtable playerHash = new Hashtable();
+        //playerHash[0] = "";
+        //PhotonNetwork.player.SetCustomProperties(new Hashtable());
     }
     #endregion
 
