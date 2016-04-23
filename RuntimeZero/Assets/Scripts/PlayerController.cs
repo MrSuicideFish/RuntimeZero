@@ -5,14 +5,12 @@ using System.Collections;
 public class PlayerController : MonoBehaviour
 {
 
-    /* This class will hold the data and functions for the player including:
-        -Player Stats ( Hp, Armor, Movement Speed, Jump Height, Current Weapon)
-        -Player Functions ( Movement control, Mouse input, Interaction command, Fire Command)
-    */
-    public Rigidbody myRB;
+    // Body Parts
+    public Rigidbody myBody;
     public Rigidbody myHead;
     public Rigidbody CurrentWeapon;
-    
+
+    // Player Stats
     public int PlayerHp = 100;
     public int PlayerArmour = 0;
     public int PlayerMovementSpeed = 10;
@@ -20,78 +18,95 @@ public class PlayerController : MonoBehaviour
     public float PlayerFallSpeed = 9.8f;
     public int PlayerWeapon = 0;
 
+    // Mouse and Head Rotation 
+    public float mouseSensitivity = 200.0f;
+    public float clampAngle = 80.0f;
+    private float rotY = 0.0f; // rotation around the up/y axis
+    private float rotX = 0.0f; // rotation around the right/x axis
 
     // Use this for initialization
- void Start()
+    void Start()
     {
-        myRB = GetComponent<Rigidbody>();
+        //get body parts 
+        myBody = GetComponent<Rigidbody>();
         myHead = GameObject.Find("PlayerHead").GetComponent<Rigidbody>();
+
+        //get local rotation
+        Vector3 rot = myHead.transform.localRotation.eulerAngles;
+        rotY = rot.y;
+        rotX = rot.x;
+
     }
-    // Update is called once per frame
- void Update()
+
+
+    void Update()
     {
+        //Mouse Look
+        float mouseX = Input.GetAxis("Mouse X");
+        float mouseY = -Input.GetAxis("Mouse Y");
 
+        rotY = rotY + mouseX * mouseSensitivity * Time.deltaTime;
+        rotX = rotX + mouseY * mouseSensitivity * Time.deltaTime;
 
+        rotX = Mathf.Clamp(rotX, -clampAngle, clampAngle);
+
+        Quaternion localRotation = Quaternion.Euler(rotX, rotY, 0.0f);
+        myHead.transform.rotation = localRotation;
+
+        myHead.position = myBody.position + Vector3.up + new Vector3(0, 0.1f, 0);
+
+        // Motion Keys
         if (Input.GetKey("w"))
         {
-            myRB.rotation = myHead.rotation;
-            myRB.AddRelativeForce(Vector3.forward * PlayerMovementSpeed);
+            myBody.rotation = myHead.rotation;
+            myBody.AddRelativeForce(Vector3.forward * PlayerMovementSpeed);
         }
-
         if (Input.GetKey("s"))
         {
-            myRB.rotation = myHead.rotation;
-            myRB.AddRelativeForce(Vector3.back * PlayerMovementSpeed);
+            myBody.rotation = myHead.rotation;
+            myBody.AddRelativeForce(Vector3.back * PlayerMovementSpeed);
         }
         if (Input.GetKey("a"))
         {
-            myRB.rotation = myHead.rotation;
-            myRB.AddRelativeForce(Vector3.left * PlayerMovementSpeed);
+            myBody.rotation = myHead.rotation;
+            myBody.AddRelativeForce(Vector3.left * PlayerMovementSpeed);
         }
         if (Input.GetKey("d"))
         {
-            myRB.rotation = myHead.rotation;
-            myRB.AddRelativeForce(Vector3.right * PlayerMovementSpeed);
+            myBody.rotation = myHead.rotation;
+            myBody.AddRelativeForce(Vector3.right * PlayerMovementSpeed);
         }
         if (Input.GetKeyDown(KeyCode.Space))
         {
-            myRB.rotation = myHead.rotation;
-            myRB.AddRelativeForce(Vector3.up * PlayerJumpForce);
+            myBody.rotation = myHead.rotation;
+            myBody.AddRelativeForce(Vector3.up * PlayerJumpForce);
         }
+        // Action Keys
+        if (Input.GetButtonDown("Fire1"))
+        {
+            myBody.rotation = myHead.rotation;
+            Fire();
+        }
+    }
 
-         if (Input.GetButtonDown("Fire1"))
-            {
-                myRB.rotation = myHead.rotation;
-                Fire();
-           }
-  }
 
+    void Fire()
+    {
+        // Physics based bullet  
+        Rigidbody rocketClone = (Rigidbody)Instantiate(CurrentWeapon, myHead.transform.position + (myHead.transform.forward * 2.5f), myHead.transform.rotation);
 
-   void Fire()
-   {
-
+        // Dumby Ray-trace
         Vector3 fwd = myHead.transform.TransformDirection(Vector3.forward);
-            RaycastHit myRay;
-            Debug.DrawRay(myHead.position, 200 * fwd, Color.green);
-            //    Debug.Log("Imma gonna Fire MY LAZer!!");
+        Debug.DrawRay(myHead.position, 2000 * fwd, Color.green);
 
-            FireRocket();
-
-     if (Physics.Raycast(myRB.position, fwd, out myRay, 200000))
-       {
-     //    Debug.Log("I FIRED MY LAZZER!");
-         if (myRay.collider.gameObject.tag == "Enemy")
-         {
-           // Debug.Log("HIT");
-          // Destroy(GetComponent("Rigidbody"));
-         }
-       }
-
-  }
-
-  void FireRocket()
-  {
-            Rigidbody rocketClone = (Rigidbody)Instantiate(CurrentWeapon, myHead.transform.position + (myHead.transform.forward * 2.5f), myHead.transform.rotation);
-  }
-
+        // Hit-scan bullet
+        RaycastHit myRay;
+        if (Physics.Raycast(myBody.position, fwd, out myRay, 200000))
+        {
+            if (myRay.collider.gameObject.tag == "Enemy")
+            {
+                Debug.Log("Bang");
+            }
+        }
+    }
 }
