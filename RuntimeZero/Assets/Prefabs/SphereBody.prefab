@@ -11,9 +11,9 @@ GameObject:
   - 33: {fileID: 3392062}
   - 135: {fileID: 13557100}
   - 23: {fileID: 2320624}
-  - 114: {fileID: 11420266}
   - 54: {fileID: 5420804}
   - 135: {fileID: 13512720}
+  - 114: {fileID: 11469186}
   m_Layer: 0
   m_Name: SphereBody
   m_TagString: Untagged
@@ -280,7 +280,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   mouseSensitivity: 200
   clampAngle: 80
---- !u!114 &11420266
+--- !u!114 &11469186
 MonoBehaviour:
   m_ObjectHideFlags: 1
   m_PrefabParentObject: {fileID: 0}
@@ -288,16 +288,16 @@ MonoBehaviour:
   m_GameObject: {fileID: 133940}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5aeeaf621c12e0f4fbde4edbaa0c5982, type: 3}
+  m_Script: {fileID: 11500000, guid: 9f59f67ab1137bb419e8f02f0c204056, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   myRB: {fileID: 0}
   myHead: {fileID: 0}
-  CurrentWeapon: {fileID: 5479048, guid: 93bb5cf11c0a33e4ea7f1c3914dba167, type: 2}
+  CurrentWeapon: {fileID: 0}
   PlayerHp: 100
   PlayerArmour: 0
-  PlayerMovementSpeed: 400
-  PlayerJumpForce: 2000
+  PlayerMovementSpeed: 10
+  PlayerJumpForce: 9
   PlayerFallSpeed: 9.8
   PlayerWeapon: 0
 --- !u!124 &12471108
