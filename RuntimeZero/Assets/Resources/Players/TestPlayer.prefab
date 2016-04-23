@@ -14,8 +14,9 @@ GameObject:
   - 54: {fileID: 5420804}
   - 135: {fileID: 13512720}
   - 114: {fileID: 11469186}
+  - 114: {fileID: 11413880}
   m_Layer: 0
-  m_Name: SphereBody
+  m_Name: TestPlayer
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -267,6 +268,31 @@ Behaviour:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 157568}
   m_Enabled: 1
+--- !u!114 &11413880
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 133940}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: aa584fbee541324448dd18d8409c7a41, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  ownerId: 0
+  group: 0
+  prefixBackup: -1
+  observed: {fileID: 0}
+  synchronization: 0
+  onSerializeTransformOption: 3
+  onSerializeRigidBodyOption: 2
+  ownershipTransfer: 2
+  ObservedComponents:
+  - {fileID: 0}
+  ObservedComponentsFoldoutOpen: 1
+  viewIdField: 0
+  instantiationId: -1
+  isRuntimeInstantiated: 0
 --- !u!114 &11415514
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -291,15 +317,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9f59f67ab1137bb419e8f02f0c204056, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  myRB: {fileID: 0}
-  myHead: {fileID: 0}
-  CurrentWeapon: {fileID: 0}
+  myBody: {fileID: 0}
+  myHead: {fileID: 5464490}
+  CurrentWeapon: {fileID: 5479048, guid: f5b8be6cda9475d4ab9c6a8e98d6ee25, type: 2}
   PlayerHp: 100
   PlayerArmour: 0
-  PlayerMovementSpeed: 10
+  PlayerMovementSpeed: 75
   PlayerJumpForce: 9
   PlayerFallSpeed: 9.8
   PlayerWeapon: 0
+  mouseSensitivity: 200
+  clampAngle: 80
 --- !u!124 &12471108
 Behaviour:
   m_ObjectHideFlags: 1

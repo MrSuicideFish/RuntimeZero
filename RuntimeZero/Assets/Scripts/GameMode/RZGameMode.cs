@@ -19,7 +19,7 @@ public class RZGameMode : PunBehaviour
     protected float TimePerRound = 60.0f;
 
     protected bool  TeamsEnabled = false,
-                    WaitingForReadyPlayers = false;
+                    WaitingForReadyPlayers = true;
 
     protected virtual void OnPhotonSerializeView( PhotonStream stream, PhotonMessageInfo info )
     {
@@ -59,25 +59,14 @@ public class RZGameMode : PunBehaviour
         {
             if (WaitingForReadyPlayers)
             {
-                bool allReady = true;
-
-                print( PhotonNetwork.playerList.Length );
-
                 for (int i = 0; i < PhotonNetwork.playerList.Length; i++)
                 {
-
-                    if( (string) PhotonNetwork.playerList[i].customProperties["IsReady"] == "false")
-                    {
-                        allReady = false;
-                    }
+                    if ((string) PhotonNetwork.playerList[i].customProperties["IsReady"] != "true")
+                        return;
                 }
 
-                if (allReady)
-                {
-                    WaitingForReadyPlayers = false;
-                    photonView.RPC("StartRound", PhotonTargets.All);
-                    return;
-                }
+                photonView.RPC( "StartRound", PhotonTargets.AllBuffered );
+                WaitingForReadyPlayers = false;
             }
         }
     }
@@ -89,7 +78,13 @@ public class RZGameMode : PunBehaviour
 
         if (WaitingForReadyPlayers)
         {
-            GUI.Label( new Rect( Screen.width / 2, Screen.height / 2, 500, 500 ), "Waiting For Players..." );
+            GUI.Label(new Rect(Screen.width/2, Screen.height/2, 500, 500), "Waiting For Players...");
+
+            //if (PhotonNetwork.isMasterClient && GUI.Button( new Rect( Screen.width / 2, 0, 300, 128 ), "Start Game" ) )
+            //{
+            //    photonView.RPC( "StartRound", PhotonTargets.AllBufferedViaServer );
+            //    WaitingForReadyPlayers = false;
+            //}
         }
     }
 
@@ -99,15 +94,11 @@ public class RZGameMode : PunBehaviour
         if (PhotonNetwork.isMasterClient)
         {
             print("Starting Game mode on Master" + GameModeName);
-            WaitingForReadyPlayers = true;
         }
         else
         {
             print( "Starting Game mode on Client" + GameModeName );
         }
-
-        RZNetworkManager.PlayerPropertiesHash["IsReady"] = "true";
-        PhotonNetwork.player.SetCustomProperties( RZNetworkManager.PlayerPropertiesHash );
     }
 
     [PunRPC]
@@ -125,6 +116,6 @@ public class RZGameMode : PunBehaviour
     [PunRPC]
     public virtual void EndGame()
     {
-        print( "Ending Game..." );
+        print("Ending Game...");
     }
 }

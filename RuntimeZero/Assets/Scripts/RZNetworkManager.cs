@@ -189,7 +189,7 @@ public class RZNetworkManager : PunBehaviour
         //Load generic level for now
         LoadScreen.LevelToLoad = "GenericArenaTest";
         LoadScreen.LevelFinishedLoadingAction = new UnityAction<string>( OnNetworkLevelHasLoaded );
-        PhotonNetwork.LoadLevel( 0 );
+        PhotonNetwork.LoadLevel( "LoadingScene" );
     }
 
     private static void SetNetworkState( int newNetworkState )
@@ -198,11 +198,10 @@ public class RZNetworkManager : PunBehaviour
         switch ( newNetworkState )
         {
             default:
-            {
+                print("Reset ready");
                 //Reset ready status        
                 PlayerPropertiesHash["IsReady"] = "false";
                 PhotonNetwork.player.SetCustomProperties(PlayerPropertiesHash);
-            }
             break;
         }
 
@@ -266,8 +265,13 @@ public class RZNetworkManager : PunBehaviour
         {
             //Start the game mode on server
             PhotonView view = PhotonView.Get(LoadedGameMode);
-            view.RPC( "StartGame", PhotonTargets.AllBuffered);
+            view.RPC( "StartGame", PhotonTargets.AllBuffered );
         }
+
+        PhotonNetwork.isMessageQueueRunning = true;
+
+        RZNetworkManager.PlayerPropertiesHash["IsReady"] = "true";
+        PhotonNetwork.player.SetCustomProperties( RZNetworkManager.PlayerPropertiesHash );
     }
 
     /// <summary>
