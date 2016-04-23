@@ -39,7 +39,7 @@ public class RZNetworkManager : PunBehaviour
 
     #region Player Session Information
 
-    public static Hashtable PlayerPropertiesHash = new Hashtable()
+    public static Hashtable PlayerPropertiesHash = new Hashtable( )
     {
         {"IsReady", "false"}
     };
@@ -109,6 +109,7 @@ public class RZNetworkManager : PunBehaviour
             {
                 stream.SendNext( NetworkState );
                 stream.SendNext( LoadedLevelName );
+                stream.SendNext( LoadedGameMode );
             }
         }
         //Reading
@@ -118,6 +119,7 @@ public class RZNetworkManager : PunBehaviour
             {
                 NetworkState = ( int )stream.ReceiveNext( );
                 LoadedLevelName = ( string )stream.ReceiveNext( );
+                LoadedGameMode = ( RZGameMode )stream.ReceiveNext( );
             }
         }
     }
@@ -126,9 +128,9 @@ public class RZNetworkManager : PunBehaviour
     void Awake( )
     {
         if ( Session )
-        {
             GameObject.Destroy( gameObject );
-        }
+        else
+            Session = this;
     }
 
     void Start( )
@@ -138,9 +140,9 @@ public class RZNetworkManager : PunBehaviour
         Initialize( );
     }
 
-    void Update()
+    void Update( )
     {
-        if (PhotonNetwork.isMasterClient)
+        if ( PhotonNetwork.isMasterClient )
         {
         }
     }
@@ -167,11 +169,11 @@ public class RZNetworkManager : PunBehaviour
     {
         if ( PhotonNetwork.LeaveRoom( ) )
         {
-            SetNetworkState( NETWORK_STATE.LOBBY.GetHashCode( )  );
+            SetNetworkState( NETWORK_STATE.LOBBY.GetHashCode( ) );
 
             //Load the main scene
             LoadScreen.LevelToLoad = "NetworkManagerTest";
-            LoadScreen.LevelFinishedLoadingAction = new UnityAction<string>(OnNetworkLevelHasLoaded);
+            LoadScreen.LevelFinishedLoadingAction = new UnityAction<string>( OnNetworkLevelHasLoaded );
             SceneManager.LoadScene( "LoadingScene" );
         }
     }
@@ -188,8 +190,7 @@ public class RZNetworkManager : PunBehaviour
             SetNetworkState( ( int )NETWORK_STATE.GAME );
         }
 
-        //Load generic game mode for now
-        LoadedGameMode = gameObject.AddComponent<RZGameMode_Deathmatch>();
+
 
         //Load generic level for now
         LoadScreen.LevelToLoad = "GenericArenaTest";
@@ -222,9 +223,20 @@ public class RZNetworkManager : PunBehaviour
                 break;
 
             case NETWORK_STATE.ROOM:
+
+                if ( PhotonNetwork.isMasterClient )
+                {
+                    print( "Master Joined room" );
+
+
+                }
+
                 break;
 
             case NETWORK_STATE.LOBBY:
+
+
+
                 break;
 
             case NETWORK_STATE.GAME:
@@ -252,10 +264,13 @@ public class RZNetworkManager : PunBehaviour
 
     static void OnNetworkLevelHasLoaded( string loadedLevel )
     {
-        if (PhotonNetwork.isMasterClient)
+        if ( PhotonNetwork.isMasterClient )
         {
+            //Load generic game mode for now
+            LoadedGameMode = Session.gameObject.AddComponent<RZGameMode_Deathmatch>( );
+
             //Start the game mode on server
-            LoadedGameMode.StartGame();
+            LoadedGameMode.StartGame( );
         }
     }
     #endregion
