@@ -4,6 +4,7 @@ using ExitGames.Client.Photon;
 using Photon;
 using UnityEngine.Events;
 using UnityEngine.SceneManagement;
+using Hashtable = ExitGames.Client.Photon.Hashtable;
 
 public enum NETWORK_STATE
 {
@@ -20,6 +21,7 @@ public class RZNetworkManager : PunBehaviour
 
     #region Flags
     public bool DebugMode = false;
+    public static bool WaitingForReadyPlayers { get; private set; }
     #endregion
 
     #region Events
@@ -33,6 +35,12 @@ public class RZNetworkManager : PunBehaviour
     public static int NetworkState { get; private set; }
     public static string LoadedLevelName { get; private set; }
     public static RZGameMode LoadedGameMode { get; private set; }
+    #endregion
+
+    #region Player Session Information
+    private static Hashtable PlayerPropertiesHash = new Hashtable();
+    //0 - Ready / Not Ready
+    //1 - Player Character Reference
     #endregion
 
     //Debug
@@ -125,6 +133,10 @@ public class RZNetworkManager : PunBehaviour
         Initialize( );
     }
 
+    void Update()
+    {
+        
+    }
 
     public static void Initialize( )
     {
@@ -230,10 +242,10 @@ public class RZNetworkManager : PunBehaviour
 
     static void OnNetworkLevelHasLoaded( string loadedLevel )
     {
-        //Set this player as ready
-        //Hashtable playerHash = new Hashtable();
-        //playerHash[0] = "";
-        //PhotonNetwork.player.SetCustomProperties(new Hashtable());
+        if (PhotonNetwork.isMasterClient)
+        {
+            //Set this player as ready
+        }
     }
     #endregion
 
