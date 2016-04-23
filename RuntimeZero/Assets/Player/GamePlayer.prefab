@@ -47,7 +47,7 @@ Transform:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 148616}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -13.802064, y: 4.4, z: -1.8439589}
+  m_LocalPosition: {x: -13.97, y: 4.45, z: -1.8439589}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 469834}
@@ -60,7 +60,7 @@ Transform:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 128084}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0.674, z: 0}
+  m_LocalPosition: {x: 0, y: 0.6999998, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 409128}
@@ -168,8 +168,8 @@ MonoBehaviour:
   ObservedComponents:
   - {fileID: 0}
   ObservedComponentsFoldoutOpen: 1
-  viewIdField: 0
-  instantiationId: -1
+  viewIdField: 1
+  instantiationId: 1
   isRuntimeInstantiated: 0
 --- !u!114 &11429312
 MonoBehaviour:
@@ -182,13 +182,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9f59f67ab1137bb419e8f02f0c204056, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  CameraBobEnabled: 0
+  CameraBobEnabled: 1
   GravityEnabled: 1
+  CameraHeight: 0.7
   MoveSpeed: 13
   MaxSpeedMagnitude: 300
   LookSensitivity: 6000
-  MinLookAngle: 0
-  MaxLookAngle: 60
+  LookClampVal: 3500
+  CameraBobSpeed: 11
+  CameraBobAmount: 0.07
 --- !u!114 &11442524
 MonoBehaviour:
   m_ObjectHideFlags: 1
