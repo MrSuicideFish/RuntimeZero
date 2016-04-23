@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
+using ExitGames.Client.Photon;
 using Photon;
 using UnityEngine.Events;
 using UnityEngine.SceneManagement;
@@ -230,6 +231,9 @@ public class RZNetworkManager : PunBehaviour
     static void OnNetworkLevelHasLoaded( string loadedLevel )
     {
         //Set this player as ready
+        Hashtable playerHash = new Hashtable();
+        playerHash[0] = "";
+        PhotonNetwork.player.SetCustomProperties(new Hashtable());
     }
     #endregion
 
