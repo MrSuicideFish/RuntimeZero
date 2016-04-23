@@ -109,7 +109,6 @@ public class RZNetworkManager : PunBehaviour
             {
                 stream.SendNext( NetworkState );
                 stream.SendNext( LoadedLevelName );
-                stream.SendNext( LoadedGameMode );
             }
         }
         //Reading
@@ -119,7 +118,6 @@ public class RZNetworkManager : PunBehaviour
             {
                 NetworkState = ( int )stream.ReceiveNext( );
                 LoadedLevelName = ( string )stream.ReceiveNext( );
-                LoadedGameMode = ( RZGameMode )stream.ReceiveNext( );
             }
         }
     }
@@ -127,9 +125,7 @@ public class RZNetworkManager : PunBehaviour
 
     void Awake( )
     {
-        if ( Session )
-            GameObject.Destroy( gameObject );
-        else
+        if(!Session)
             Session = this;
     }
 
@@ -190,8 +186,6 @@ public class RZNetworkManager : PunBehaviour
             SetNetworkState( ( int )NETWORK_STATE.GAME );
         }
 
-
-
         //Load generic level for now
         LoadScreen.LevelToLoad = "GenericArenaTest";
         LoadScreen.LevelFinishedLoadingAction = new UnityAction<string>( OnNetworkLevelHasLoaded );
@@ -203,7 +197,13 @@ public class RZNetworkManager : PunBehaviour
         //Prepare new networkState
         switch ( newNetworkState )
         {
-
+            default:
+            {
+                //Reset ready status        
+                PlayerPropertiesHash["IsReady"] = "false";
+                PhotonNetwork.player.SetCustomProperties(PlayerPropertiesHash);
+            }
+            break;
         }
 
         NetworkState = newNetworkState;
@@ -226,9 +226,7 @@ public class RZNetworkManager : PunBehaviour
 
                 if ( PhotonNetwork.isMasterClient )
                 {
-                    print( "Master Joined room" );
-
-
+                    photonView.RPC("SetGameMode", PhotonTargets.AllBuffered, 0);
                 }
 
                 break;
@@ -266,13 +264,32 @@ public class RZNetworkManager : PunBehaviour
     {
         if ( PhotonNetwork.isMasterClient )
         {
-            //Load generic game mode for now
-            LoadedGameMode = Session.gameObject.AddComponent<RZGameMode_Deathmatch>( );
-
             //Start the game mode on server
-            LoadedGameMode.StartGame( );
+            PhotonView view = PhotonView.Get(LoadedGameMode);
+            view.RPC( "StartGame", PhotonTargets.AllBuffered);
         }
     }
+
+    /// <summary>
+    /// 0 - Deathmatch
+    /// 1 - Killswitch
+    /// </summary>
+    /// <param name="gameModeIdx"></param>
+    [PunRPC]
+    private void SetGameMode(int gameModeIdx = 0)
+    {
+        switch (gameModeIdx)
+        {
+            case 0:
+            {
+                    LoadedGameMode = Session.gameObject.AddComponent<RZGameMode_Deathmatch>( );
+                    Session.photonView.ObservedComponents.Add( LoadedGameMode );
+                    Session.photonView.RefreshRpcMonoBehaviourCache( );
+            }
+            break;
+        }
+    }
+
     #endregion
 
     #region Exception

@@ -28,7 +28,13 @@ public class RZGameMode : PunBehaviour
         {
             if ( PhotonNetwork.isMasterClient )
             {
-
+                stream.SendNext( GameModeName );
+                stream.SendNext( MinimumNumPlayers );
+                stream.SendNext( MaximumNumPlayers );
+                stream.SendNext( NumOfTeams );
+                stream.SendNext( TimePerRound );
+                stream.SendNext( TeamsEnabled );
+                stream.SendNext( WaitingForReadyPlayers );
             }
         }
         //Reading
@@ -36,7 +42,13 @@ public class RZGameMode : PunBehaviour
         {
             if ( !PhotonNetwork.isMasterClient )
             {
-
+                GameModeName            = ( string )stream.ReceiveNext();
+                MinimumNumPlayers       = ( int )stream.ReceiveNext( );
+                MaximumNumPlayers       = ( int )stream.ReceiveNext( );
+                NumOfTeams              = ( int )stream.ReceiveNext( );
+                TimePerRound            = ( float )stream.ReceiveNext( );
+                TeamsEnabled            = ( bool )stream.ReceiveNext( );
+                WaitingForReadyPlayers  = ( bool )stream.ReceiveNext( );
             }
         }
     }
@@ -47,10 +59,13 @@ public class RZGameMode : PunBehaviour
         {
             if (WaitingForReadyPlayers)
             {
-
                 bool allReady = true;
+
+                print( PhotonNetwork.playerList.Length );
+
                 for (int i = 0; i < PhotonNetwork.playerList.Length; i++)
                 {
+
                     if( (string) PhotonNetwork.playerList[i].customProperties["IsReady"] == "false")
                     {
                         allReady = false;
@@ -60,7 +75,7 @@ public class RZGameMode : PunBehaviour
                 if (allReady)
                 {
                     WaitingForReadyPlayers = false;
-                    StartRound();
+                    photonView.RPC("StartRound", PhotonTargets.All);
                     return;
                 }
             }
@@ -72,10 +87,9 @@ public class RZGameMode : PunBehaviour
         GUIStyle style = new GUIStyle();
         style.fontSize = 75;
 
-        GUI.Label( new Rect( Screen.width / 2, Screen.height / 2, 500, 500 ), "Waiting For Players..." );
         if (WaitingForReadyPlayers)
         {
-            
+            GUI.Label( new Rect( Screen.width / 2, Screen.height / 2, 500, 500 ), "Waiting For Players..." );
         }
     }
 

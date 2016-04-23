@@ -41,4 +41,5 @@ MonoBehaviour:
   - EndRound
   - StartGame
   - StartRound
+  - SetGameMode
   DisableAutoOpenWizard: 1

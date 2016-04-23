@@ -15,8 +15,20 @@ public class RZGameMode_Deathmatch : RZGameMode
         TimePerRound = 999999.9f;
     }
 
-    public override void StartGame()
+    [PunRPC]
+    public override void StartRound()
     {
-        base.StartGame();
+        base.StartRound();
+
+        if (PhotonNetwork.isMasterClient)
+        {
+            //spawn players randomly
+            for (int i = 0; i < PhotonNetwork.playerList.Length; i++)
+            {
+                Vector3 randPosition = new Vector3(Random.Range(20, 20), 5, Random.Range(20, 20));
+                GameObject newPlayer = PhotonNetwork.Instantiate("Players/TestPlayer", randPosition, Quaternion.identity, 1);
+                //newPlayer.GetComponent<PhotonView>().TransferOwnership(PhotonNetwork.playerList[i]);
+            }
+        }
     }
 }
