@@ -4,6 +4,7 @@ using ExitGames.Client.Photon;
 using Photon;
 using UnityEngine.Events;
 using UnityEngine.SceneManagement;
+using Hashtable = ExitGames.Client.Photon.Hashtable;
 
 public enum NETWORK_STATE
 {
@@ -20,6 +21,7 @@ public class RZNetworkManager : PunBehaviour
 
     #region Flags
     public bool DebugMode = false;
+
     #endregion
 
     #region Events
@@ -33,6 +35,17 @@ public class RZNetworkManager : PunBehaviour
     public static int NetworkState { get; private set; }
     public static string LoadedLevelName { get; private set; }
     public static RZGameMode LoadedGameMode { get; private set; }
+    #endregion
+
+    #region Player Session Information
+
+    public static Hashtable PlayerPropertiesHash = new Hashtable()
+    {
+        {"IsReady", "false"}
+    };
+
+    //0 - Ready / Not Ready
+    //1 - Player Character Reference
     #endregion
 
     //Debug
@@ -125,6 +138,12 @@ public class RZNetworkManager : PunBehaviour
         Initialize( );
     }
 
+    void Update()
+    {
+        if (PhotonNetwork.isMasterClient)
+        {
+        }
+    }
 
     public static void Initialize( )
     {
@@ -168,6 +187,9 @@ public class RZNetworkManager : PunBehaviour
         {
             SetNetworkState( ( int )NETWORK_STATE.GAME );
         }
+
+        //Load generic game mode for now
+        LoadedGameMode = gameObject.AddComponent<RZGameMode_Deathmatch>();
 
         //Load generic level for now
         LoadScreen.LevelToLoad = "GenericArenaTest";
@@ -230,10 +252,11 @@ public class RZNetworkManager : PunBehaviour
 
     static void OnNetworkLevelHasLoaded( string loadedLevel )
     {
-        //Set this player as ready
-        //Hashtable playerHash = new Hashtable();
-        //playerHash[0] = "";
-        //PhotonNetwork.player.SetCustomProperties(new Hashtable());
+        if (PhotonNetwork.isMasterClient)
+        {
+            //Start the game mode on server
+            LoadedGameMode.StartGame();
+        }
     }
     #endregion
 
