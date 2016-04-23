@@ -1,5 +1,6 @@
 Base path: C:/Program Files/Unity/Editor/Data
 Cmd: getPlatforms
+<<<<<<< af8885c4b82092d91f0f4d3344be6d0e74e49f79
 Cmd: preprocess
   insize=445 outsize=445 ok=1
 Cmd: preprocess
@@ -208,3 +209,5 @@ Cmd: compileSnippet
 Cmd: compileSnippet
   api=4 type=1 insize=965 outsize=6097 kw=DIRECTIONAL SHADOWS_SCREEN LIGHTMAP_OFF DIRLIGHTMAP_OFF DYNAMICLIGHTMAP_OFF _NORMALMAP _SPECGLOSSMAP pd=UNITY_ENABLE_REFLECTION_BUFFERS UNITY_PBS_USE_BRDF1 UNITY_SPECCUBE_BOX_PROJECTION UNITY_SPECCUBE_BLENDING ok=1
 >>>>>>> 10095032424802acce97a18102e47e79e674d39c
+=======
+>>>>>>> Updated PlayerController and MouseLook; scripts needs to be merged to PlayerController
