@@ -1,21 +1,29 @@
 ﻿using UnityEngine;
 using System.Collections;
+using UnityEngine.Events;
 using UnityEngine.SceneManagement;
 
 public class LoadScreen : MonoBehaviour
 {
     private AsyncOperation Async_LoadLevelOperation;
     public static bool LevelIsLoaded { get; private set; }
+    private static string LevelToLoad;
 
-    public static void BeginLoadScene()
+    private static UnityAction<string> LevelFinishedLoadingAction;
+
+    public static void BeginLoadScene( UnityAction<string> asyncFinishAction = null )
     {
         LevelIsLoaded = false;
+        LevelToLoad = RZNetworkManager.LoadedLevelName;
+        LevelFinishedLoadingAction = asyncFinishAction;
         SceneManager.LoadScene("LoadingScene");
     }
 
     void Start()
     {
-        Async_LoadLevelOperation = SceneManager.LoadSceneAsync( RZNetworkManager.LoadedLevelName,
+        LevelToLoad = RZNetworkManager.LoadedLevelName;
+
+        Async_LoadLevelOperation = SceneManager.LoadSceneAsync( LevelToLoad,
             LoadSceneMode.Additive );
 
         print( "Begin load" );
@@ -26,9 +34,15 @@ public class LoadScreen : MonoBehaviour
         if (Async_LoadLevelOperation != null && Async_LoadLevelOperation.isDone)
         {
             print("Level Load complete");
+
             PhotonNetwork.isMessageQueueRunning = true;
-            LevelIsLoaded = true;
             SceneManager.UnloadScene("LoadingScene");
+            LevelIsLoaded = true;
+
+            if (LevelFinishedLoadingAction != null)
+            {
+                LevelFinishedLoadingAction.Invoke(LevelToLoad);
+            }
         }
     }
 }

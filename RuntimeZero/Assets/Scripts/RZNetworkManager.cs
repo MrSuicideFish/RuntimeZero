@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 using Photon;
+using UnityEngine.Events;
 using UnityEngine.SceneManagement;
 
 public enum NETWORK_STATE
@@ -22,7 +23,7 @@ public class RZNetworkManager : PunBehaviour
 
     #region Events
 
-    public delegate void NetworkStateChange(int newNetworkState);
+    public delegate void NetworkStateChange( int newNetworkState );
     public static event NetworkStateChange OnNetworkStateChanged;
 
     #endregion
@@ -30,49 +31,50 @@ public class RZNetworkManager : PunBehaviour
     #region Session Information
     public static int NetworkState { get; private set; }
     public static string LoadedLevelName { get; private set; }
+    public static RZGameMode LoadedGameMode { get; private set; }
     #endregion
 
     //Debug
     void OnGUI( )
     {
-        if (DebugMode)
+        if ( DebugMode )
         {
-            GUILayout.BeginVertical();
+            GUILayout.BeginVertical( );
 
-            GUILayout.Label(PhotonNetwork.connectionStateDetailed.ToString());
+            GUILayout.Label( PhotonNetwork.connectionStateDetailed.ToString( ) );
 
             bool isInRoom = PhotonNetwork.inRoom;
-            if ( GUILayout.Button(!isInRoom ? "Join Room" : "Leave Room"))
+            if ( GUILayout.Button( !isInRoom ? "Join Room" : "Leave Room" ) )
             {
-                if (isInRoom)
-                    LeaveRoom();
+                if ( isInRoom )
+                    LeaveRoom( );
                 else
-                    JoinRoom();
+                    JoinRoom( );
             }
 
-            GUILayout.Label("Players in room: " + PhotonNetwork.playerList.Length);
-            GUILayout.Label("SERVER NETWORK STATE: " + (NETWORK_STATE) NetworkState);
+            GUILayout.Label( "Players in room: " + PhotonNetwork.playerList.Length );
+            GUILayout.Label( "SERVER NETWORK STATE: " + ( NETWORK_STATE )NetworkState );
 
-            GUILayout.BeginHorizontal();
+            GUILayout.BeginHorizontal( );
 
-            if (PhotonNetwork.isMasterClient)
+            if ( PhotonNetwork.isMasterClient )
             {
-                if (NetworkState == (int) NETWORK_STATE.ROOM)
+                if ( NetworkState == ( int )NETWORK_STATE.ROOM )
                 {
-                    if (GUILayout.Button("LaunchGame"))
+                    if ( GUILayout.Button( "LaunchGame" ) )
                     {
-                        PhotonNetwork.RPC(PhotonView.Get(this), "LaunchGame", PhotonTargets.AllBuffered, false);
+                        PhotonNetwork.RPC( PhotonView.Get( this ), "LaunchGame", PhotonTargets.AllBuffered, false );
                     }
                 }
             }
             else
             {
-                
+
             }
 
-            GUILayout.EndHorizontal();
+            GUILayout.EndHorizontal( );
 
-            GUILayout.EndVertical();
+            GUILayout.EndVertical( );
         }
     }
 
@@ -87,27 +89,27 @@ public class RZNetworkManager : PunBehaviour
     void OnPhotonSerializeView( PhotonStream stream, PhotonMessageInfo info )
     {
         //Writing
-        if (stream.isWriting)
+        if ( stream.isWriting )
         {
-            if (PhotonNetwork.isMasterClient)
+            if ( PhotonNetwork.isMasterClient )
             {
                 stream.SendNext( NetworkState );
                 stream.SendNext( LoadedLevelName );
             }
         }
         //Reading
-        else if (stream.isReading)
+        else if ( stream.isReading )
         {
-            if (!PhotonNetwork.isMasterClient)
+            if ( !PhotonNetwork.isMasterClient )
             {
-                NetworkState = (int) stream.ReceiveNext();
-                LoadedLevelName = (string) stream.ReceiveNext();
+                NetworkState = ( int )stream.ReceiveNext( );
+                LoadedLevelName = ( string )stream.ReceiveNext( );
             }
         }
     }
     #endregion
 
-    void Awake()
+    void Awake( )
     {
         if ( Session )
         {
@@ -118,8 +120,13 @@ public class RZNetworkManager : PunBehaviour
     void Start( )
     {
         DontDestroyOnLoad( gameObject );
-        SetNetworkState(NETWORK_STATE.DISCONNECTED.GetHashCode());
+        SetNetworkState( NETWORK_STATE.DISCONNECTED.GetHashCode( ) );
         Initialize( );
+    }
+
+    static void OnNetworkLevelHasLoaded(string loadedLevel)
+    {
+        print("Level Loaded: " + loadedLevel);
     }
 
     public static void Initialize( )
@@ -127,7 +134,7 @@ public class RZNetworkManager : PunBehaviour
         //Connect to photon
         if ( PhotonNetwork.ConnectUsingSettings( "0.01a" ) )
         {
-            SetNetworkState(NETWORK_STATE.LOBBY.GetHashCode());
+            SetNetworkState( NETWORK_STATE.LOBBY.GetHashCode( ) );
         }
     }
 
@@ -136,7 +143,7 @@ public class RZNetworkManager : PunBehaviour
         //For now, join a random lobby
         if ( PhotonNetwork.JoinOrCreateRoom( roomName, null, TypedLobby.Default ) )
         {
-            SetNetworkState(NETWORK_STATE.ROOM.GetHashCode());
+            SetNetworkState( NETWORK_STATE.ROOM.GetHashCode( ) );
         }
     }
 
@@ -144,68 +151,66 @@ public class RZNetworkManager : PunBehaviour
     {
         if ( PhotonNetwork.LeaveRoom( ) )
         {
-            SetNetworkState(NETWORK_STATE.LOBBY.GetHashCode( ));
+            SetNetworkState( NETWORK_STATE.LOBBY.GetHashCode( ) );
             LoadedLevelName = "NetworkManagerTest";
-            LoadScreen.BeginLoadScene();
+            LoadScreen.BeginLoadScene(new UnityAction<string>( OnNetworkLevelHasLoaded ) );
         }
     }
 
     [PunRPC]
-    public void LaunchGame()
+    public void LaunchGame( )
     {
         //Disable message queue
         PhotonNetwork.isMessageQueueRunning = false;
 
         //load level for all players
-        if (PhotonNetwork.isMasterClient)
+        if ( PhotonNetwork.isMasterClient )
         {
-            SetNetworkState((int) NETWORK_STATE.GAME);
+            SetNetworkState( ( int )NETWORK_STATE.GAME );
         }
 
         LoadedLevelName = "GenericArenaTest";
-        PhotonNetwork.LoadLevel(0);
+        PhotonNetwork.LoadLevel( 0 );
     }
 
-    private static void SetNetworkState(int newNetworkState)
+    private static void SetNetworkState( int newNetworkState )
     {
         //Prepare new networkState
-        switch (newNetworkState)
+        switch ( newNetworkState )
         {
 
         }
 
         NetworkState = newNetworkState;
-
-        if (OnNetworkStateChanged != null)
+        if ( OnNetworkStateChanged != null )
         {
-            OnNetworkStateChanged(NetworkState);
+            OnNetworkStateChanged( NetworkState );
         }
     }
 
     #region Callbacks
-
     void OnJoinedRoom( )
     {
-        NETWORK_STATE state = (NETWORK_STATE) NetworkState;
-        switch (state)
+        NETWORK_STATE state = ( NETWORK_STATE )NetworkState;
+        switch ( state )
         {
-                case NETWORK_STATE.DISCONNECTED:
+            case NETWORK_STATE.DISCONNECTED:
                 break;
 
-                case NETWORK_STATE.ROOM:
+            case NETWORK_STATE.ROOM:
                 break;
 
-                case NETWORK_STATE.LOBBY:
+            case NETWORK_STATE.LOBBY:
                 break;
 
-                case NETWORK_STATE.GAME:
+            case NETWORK_STATE.GAME:
                 break;
         }
     }
 
     void OnLeftRoom( )
     {
-        if (NetworkState == (int) NETWORK_STATE.GAME)
+        if ( NetworkState == ( int )NETWORK_STATE.GAME )
         {
             LoadedLevelName = "NetworkManagerTest";
             LoadScreen.BeginLoadScene();
@@ -221,7 +226,6 @@ public class RZNetworkManager : PunBehaviour
     {
 
     }
-
     #endregion
 
     #region Exception

@@ -37,4 +37,8 @@ MonoBehaviour:
   - RequestForPickupTimes
   - TaggedPlayer
   - LaunchGame
+  - EndGame
+  - EndRound
+  - StartGame
+  - StartRound
   DisableAutoOpenWizard: 1
