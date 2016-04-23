@@ -1,112 +1,100 @@
 ﻿using UnityEngine;
 using System.Collections;
+using Photon;
+using UnityEngine.UI;
 
-
-public class PlayerController : MonoBehaviour
+[ExecuteInEditMode]
+[RequireComponent(typeof(CharacterController))]
+public class PlayerController : PunBehaviour
 {
+    /// <summary>
+    /// Input Variables
+    /// </summary>
+    private Vector3 MoveDirection;
+    private Vector3 LookDirection;
 
-    // Body Parts
-    public Rigidbody myBody;
-    public Rigidbody myHead;
-    public Rigidbody CurrentWeapon;
+    private float LookXAngle,
+                    LookYAngle;
 
-    // Player Stats
-    public int PlayerHp = 100;
-    public int PlayerArmour = 0;
-    public int PlayerMovementSpeed = 10;
-    public int PlayerJumpForce = 9;
-    public float PlayerFallSpeed = 9.8f;
-    public int PlayerWeapon = 0;
+    private Camera PlayerCamera;
+    private PhotonView PhotonViewComponent;
+    private CharacterController CharacterControllerComponent;
 
-    // Mouse and Head Rotation 
-    public float mouseSensitivity = 200.0f;
-    public float clampAngle = 80.0f;
-    private float rotY = 0.0f; // rotation around the up/y axis
-    private float rotX = 0.0f; // rotation around the right/x axis
+    //Camera properties
+    public bool CameraBobEnabled = false,
+                GravityEnabled = true;
 
-    // Use this for initialization
-    void Start()
+    public float
+        CameraHeight = 5.0f,
+        MoveSpeed = 10.0f,
+        MaxSpeedMagnitude = 1.0f,
+        LookSensitivity = 1.0f,
+        MinLookAngle = 0.0f,
+        MaxLookAngle = 60.0f,
+        CameraBobSpeed = 1.0f,
+        CameraBobAmount = 1.0f;
+
+    void Start( )
     {
-        //get body parts 
-        myBody = GetComponent<Rigidbody>();
-        myHead = GameObject.Find("PlayerHead").GetComponent<Rigidbody>();
-
-        //get local rotation
-        Vector3 rot = myHead.transform.localRotation.eulerAngles;
-        rotY = rot.y;
-        rotX = rot.x;
-
+        InitializePlayer( );
     }
 
-
-    void Update()
+    void InitializePlayer( )
     {
-        //Mouse Look
-        float mouseX = Input.GetAxis("Mouse X");
-        float mouseY = -Input.GetAxis("Mouse Y");
-
-        rotY = rotY + mouseX * mouseSensitivity * Time.deltaTime;
-        rotX = rotX + mouseY * mouseSensitivity * Time.deltaTime;
-
-        rotX = Mathf.Clamp(rotX, -clampAngle, clampAngle);
-
-        Quaternion localRotation = Quaternion.Euler(rotX, rotY, 0.0f);
-        myHead.transform.rotation = localRotation;
-
-        myHead.position = myBody.position + Vector3.up + new Vector3(0, 0.1f, 0);
-
-        // Motion Keys
-        if (Input.GetKey("w"))
-        {
-            myBody.rotation = myHead.rotation;
-            myBody.AddRelativeForce(Vector3.forward * PlayerMovementSpeed);
-        }
-        if (Input.GetKey("s"))
-        {
-            myBody.rotation = myHead.rotation;
-            myBody.AddRelativeForce(Vector3.back * PlayerMovementSpeed);
-        }
-        if (Input.GetKey("a"))
-        {
-            myBody.rotation = myHead.rotation;
-            myBody.AddRelativeForce(Vector3.left * PlayerMovementSpeed);
-        }
-        if (Input.GetKey("d"))
-        {
-            myBody.rotation = myHead.rotation;
-            myBody.AddRelativeForce(Vector3.right * PlayerMovementSpeed);
-        }
-        if (Input.GetKeyDown(KeyCode.Space))
-        {
-            myBody.rotation = myHead.rotation;
-            myBody.AddRelativeForce(Vector3.up * PlayerJumpForce);
-        }
-        // Action Keys
-        if (Input.GetButtonDown("Fire1"))
-        {
-            myBody.rotation = myHead.rotation;
-            Fire();
-        }
+        CharacterControllerComponent = GetComponent<CharacterController>( );
+        PhotonViewComponent = GetComponent<PhotonView>( );
+        PlayerCamera = transform.GetChild( 0 ).GetComponent<Camera>( );
+        Cursor.visible = false;
     }
 
-
-    void Fire()
+    void FixedUpdate( )
     {
-        // Physics based bullet  
-        Rigidbody rocketClone = (Rigidbody)Instantiate(CurrentWeapon, myHead.transform.position + (myHead.transform.forward * 2.5f), myHead.transform.rotation);
+        //Calculate mahf
+        LookXAngle += Input.GetAxis("Mouse X")*LookSensitivity*Time.deltaTime;
+        LookYAngle -= Input.GetAxis("Mouse Y")*LookSensitivity*Time.deltaTime;
 
-        // Dumby Ray-trace
-        Vector3 fwd = myHead.transform.TransformDirection(Vector3.forward);
-        Debug.DrawRay(myHead.position, 2000 * fwd, Color.green);
+        //LookYAngle = Mathf.Clamp(LookXAngle, MinLookAngle, MaxLookAngle);
 
-        // Hit-scan bullet
-        RaycastHit myRay;
-        if (Physics.Raycast(myBody.position, fwd, out myRay, 200000))
+        /*************
+        /*Locomotion
+        /*************/
+        //Calc dir
+        Vector3 MoveDir =
+            new Vector3( Input.GetAxis( "Horizontal" ), 0, Input.GetAxis( "Vertical" ) );
+
+        //transform dir
+        MoveDir = transform.TransformDirection(MoveDir);
+
+        //Position
+        if ( Vector3.Distance(Vector3.zero, CharacterControllerComponent.velocity) < MaxSpeedMagnitude)
+            CharacterControllerComponent.Move( MoveDir * MoveSpeed * Time.deltaTime );
+
+        //Rotation
+        transform.eulerAngles = new Vector3(transform.eulerAngles.x, PlayerCamera.transform.eulerAngles.y,
+            transform.eulerAngles.z);
+
+        //Process gravity (after the fact)
+        if ( GravityEnabled )
         {
-            if (myRay.collider.gameObject.tag == "Enemy")
-            {
-                Debug.Log("Bang");
-            }
+            CharacterControllerComponent.Move( Physics.gravity * Time.deltaTime );
         }
+
+        /*************
+        /*CAMERA
+        /*************/
+        var cameraOffsetPos = new Vector3( 0, CameraHeight, 0 );
+
+        //Process camera bob
+        if ( CameraBobEnabled && MoveDir != Vector3.zero )
+        {
+            float yOffset = Mathf.Sin(Time.time*((Mathf.PI/2) * CameraBobSpeed))*CameraBobAmount;
+            cameraOffsetPos.y += yOffset;
+        }
+
+        //Position
+        PlayerCamera.transform.position = transform.position + cameraOffsetPos;
+
+        //Rotation
+        PlayerCamera.transform.eulerAngles = new Vector3( LookYAngle, LookXAngle, 0 ) * Time.deltaTime;
     }
 }
