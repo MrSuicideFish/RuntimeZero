@@ -50,24 +50,24 @@ public class RZGameMode : PunBehaviour
     [PunRPC]
     public virtual void StartGame()
     {
-
+        print("Starting Game mode " + GameModeName);
     }
 
     [PunRPC]
     public virtual void StartRound()
     {
-        
+        print( "Starting Round..." );
     }
 
     [PunRPC]
     public virtual void EndRound()
     {
-        
+        print( "Ending Round..." );
     }
 
     [PunRPC]
     public virtual void EndGame()
     {
-        
+        print( "Ending Game..." );
     }
 }

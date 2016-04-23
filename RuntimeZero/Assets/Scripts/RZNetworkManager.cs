@@ -124,10 +124,6 @@ public class RZNetworkManager : PunBehaviour
         Initialize( );
     }
 
-    static void OnNetworkLevelHasLoaded(string loadedLevel)
-    {
-        print("Level Loaded: " + loadedLevel);
-    }
 
     public static void Initialize( )
     {
@@ -151,9 +147,12 @@ public class RZNetworkManager : PunBehaviour
     {
         if ( PhotonNetwork.LeaveRoom( ) )
         {
-            SetNetworkState( NETWORK_STATE.LOBBY.GetHashCode( ) );
-            LoadedLevelName = "NetworkManagerTest";
-            LoadScreen.BeginLoadScene(new UnityAction<string>( OnNetworkLevelHasLoaded ) );
+            SetNetworkState( NETWORK_STATE.LOBBY.GetHashCode( )  );
+
+            //Load the main scene
+            LoadScreen.LevelToLoad = "NetworkManagerTest";
+            LoadScreen.LevelFinishedLoadingAction = new UnityAction<string>(OnNetworkLevelHasLoaded);
+            SceneManager.LoadScene( "LoadingScene" );
         }
     }
 
@@ -169,7 +168,9 @@ public class RZNetworkManager : PunBehaviour
             SetNetworkState( ( int )NETWORK_STATE.GAME );
         }
 
-        LoadedLevelName = "GenericArenaTest";
+        //Load generic level for now
+        LoadScreen.LevelToLoad = "GenericArenaTest";
+        LoadScreen.LevelFinishedLoadingAction = new UnityAction<string>( OnNetworkLevelHasLoaded );
         PhotonNetwork.LoadLevel( 0 );
     }
 
@@ -212,19 +213,23 @@ public class RZNetworkManager : PunBehaviour
     {
         if ( NetworkState == ( int )NETWORK_STATE.GAME )
         {
-            LoadedLevelName = "NetworkManagerTest";
-            LoadScreen.BeginLoadScene();
+            LoadScreen.LevelToLoad = "NetworkManagerTest";
+            SceneManager.LoadScene( "LoadingScene" );
         }
     }
 
     void OnPhotonPlayerConnected( PhotonPlayer player )
     {
-
     }
 
     void OnPhotonPlayerDisconnected( PhotonPlayer player )
     {
 
+    }
+
+    static void OnNetworkLevelHasLoaded( string loadedLevel )
+    {
+        //Set this player as ready
     }
     #endregion
 
