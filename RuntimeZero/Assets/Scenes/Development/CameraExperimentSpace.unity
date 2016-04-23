@@ -98,7 +98,6 @@ GameObject:
   - 23: {fileID: 480577679}
   - 54: {fileID: 480577678}
   - 65: {fileID: 480577677}
-  - 114: {fileID: 480577676}
   m_Layer: 0
   m_Name: PlayerHead
   m_TagString: Untagged
@@ -119,19 +118,6 @@ Transform:
   - {fileID: 1189701772}
   m_Father: {fileID: 853258813}
   m_RootOrder: 0
---- !u!114 &480577676
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 0}
-  m_GameObject: {fileID: 480577674}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5beeda5e0e951b74fb150149c407774e, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  mouseSensitivity: 200
-  clampAngle: 80
 --- !u!65 &480577677
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -241,7 +227,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9f59f67ab1137bb419e8f02f0c204056, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  myRB: {fileID: 0}
+  myBody: {fileID: 0}
   myHead: {fileID: 0}
   CurrentWeapon: {fileID: 5479048, guid: f5b8be6cda9475d4ab9c6a8e98d6ee25, type: 2}
   PlayerHp: 100
@@ -250,6 +236,8 @@ MonoBehaviour:
   PlayerJumpForce: 1500
   PlayerFallSpeed: 9.8
   PlayerWeapon: 0
+  mouseSensitivity: 200
+  clampAngle: 80
 --- !u!135 &853258808
 SphereCollider:
   m_ObjectHideFlags: 0
