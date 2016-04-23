@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 using Photon;
+using Hashtable = ExitGames.Client.Photon.Hashtable;
 
 /// <summary>
 /// This is meant to be the parent class for all game modes in the game.
@@ -9,15 +10,16 @@ public class RZGameMode : PunBehaviour
 {
     public static RZGameMode Current;
 
-    public string GameModeName = "Default Game Mode";
-    
-    public int  MinimumNumPlayers = 0,
-                MaximumNumPlayers = 10,
-                NumOfTeams = 1;
+    protected string GameModeName = "Default Game Mode";
 
-    public float TimePerRound = 60.0f;
+    protected int   MinimumNumPlayers = 0,
+                    MaximumNumPlayers = 10,
+                    NumOfTeams = 1;
 
-    public bool TeamsEnabled = false;
+    protected float TimePerRound = 60.0f;
+
+    protected bool  TeamsEnabled = false,
+                    WaitingForReadyPlayers = false;
 
     protected virtual void OnPhotonSerializeView( PhotonStream stream, PhotonMessageInfo info )
     {
@@ -43,7 +45,21 @@ public class RZGameMode : PunBehaviour
     {
         if (PhotonNetwork.isMasterClient)
         {
-            
+            if (WaitingForReadyPlayers)
+            {
+                bool allReady = true;
+                for (int i = 0; i < PhotonNetwork.playerList.Length; i++)
+                {
+                    allReady = ((string) PhotonNetwork.playerList[i].customProperties[0]) == "true";
+                }
+
+                if (allReady)
+                {
+                    WaitingForReadyPlayers = false;
+                    StartRound();
+                    return;
+                }
+            }
         }
     }
 
@@ -51,6 +67,14 @@ public class RZGameMode : PunBehaviour
     public virtual void StartGame()
     {
         print("Starting Game mode " + GameModeName);
+
+        if ( PhotonNetwork.isMasterClient )
+        {
+            WaitingForReadyPlayers = true;
+        }
+
+        RZNetworkManager.PlayerPropertiesHash["IsReady"] = "true";
+        PhotonNetwork.player.SetCustomProperties( RZNetworkManager.PlayerPropertiesHash );
     }
 
     [PunRPC]

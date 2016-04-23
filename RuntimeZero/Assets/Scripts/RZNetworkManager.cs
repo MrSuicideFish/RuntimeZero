@@ -21,7 +21,7 @@ public class RZNetworkManager : PunBehaviour
 
     #region Flags
     public bool DebugMode = false;
-    public static bool WaitingForReadyPlayers { get; private set; }
+
     #endregion
 
     #region Events
@@ -38,7 +38,12 @@ public class RZNetworkManager : PunBehaviour
     #endregion
 
     #region Player Session Information
-    private static Hashtable PlayerPropertiesHash = new Hashtable();
+
+    public static Hashtable PlayerPropertiesHash = new Hashtable()
+    {
+        {"IsReady", "false"}
+    };
+
     //0 - Ready / Not Ready
     //1 - Player Character Reference
     #endregion
@@ -135,7 +140,9 @@ public class RZNetworkManager : PunBehaviour
 
     void Update()
     {
-        
+        if (PhotonNetwork.isMasterClient)
+        {
+        }
     }
 
     public static void Initialize( )
@@ -180,6 +187,9 @@ public class RZNetworkManager : PunBehaviour
         {
             SetNetworkState( ( int )NETWORK_STATE.GAME );
         }
+
+        //Load generic game mode for now
+        LoadedGameMode = gameObject.AddComponent<RZGameMode_Deathmatch>();
 
         //Load generic level for now
         LoadScreen.LevelToLoad = "GenericArenaTest";
@@ -244,7 +254,8 @@ public class RZNetworkManager : PunBehaviour
     {
         if (PhotonNetwork.isMasterClient)
         {
-            //Set this player as ready
+            //Start the game mode on server
+            LoadedGameMode.StartGame();
         }
     }
     #endregion
