@@ -199,7 +199,8 @@ MonoBehaviour:
   GravityEnabled: 1
   OfflineMode: 0
   CameraHeight: 0.7
-  MoveSpeed: 13
+  MoveSpeed: 8
+  MoveStiffness: 3
   MaxSpeedMagnitude: 300
   LookSensitivity: 6000
   LookClampVal: 3500

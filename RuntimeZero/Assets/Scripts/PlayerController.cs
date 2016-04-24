@@ -30,6 +30,7 @@ public class PlayerController : PunBehaviour
     public float
         CameraHeight = 0.7f,
         MoveSpeed = 13,
+        MoveStiffness = 3.0f,
         MaxSpeedMagnitude = 300,
         LookSensitivity = 6000,
         LookClampVal = 3500,
@@ -92,7 +93,7 @@ public class PlayerController : PunBehaviour
         /*************/
         //Calc dir
         Vector3 MoveDir =
-            new Vector3( Input.GetAxis( "Horizontal" ), 0, Input.GetAxis( "Vertical" ) );
+            new Vector3(Input.GetAxis("Horizontal"), 0, Input.GetAxis("Vertical"))*MoveStiffness;
 
         //transform dir
         MoveDir = transform.TransformDirection(MoveDir);
