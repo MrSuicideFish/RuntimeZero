@@ -16,7 +16,7 @@ MonoBehaviour:
   ServerAddress: 
   ServerPort: 5055
   AppID: ca453a0a-ce8c-46eb-b265-5d02b5c2d636
-  PreferredRegion: 0
+  PreferredRegion: 1
   EnabledRegions: -1
   JoinLobby: 0
   EnableLobbyStatistics: 0
