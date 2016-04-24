@@ -33,6 +33,13 @@ public class PlayerController : PunBehaviour
         CameraBobSpeed = 11,
         CameraBobAmount = 0.07f;
 
+    void Start()
+    {
+        if (!PhotonNetwork.connectedAndReady)
+        {
+            InitializePlayer();
+        }    
+    }
 
     void OnPhotonInstantiate( PhotonMessageInfo info )
     {
