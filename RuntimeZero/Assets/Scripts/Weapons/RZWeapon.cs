@@ -16,7 +16,7 @@ public enum eWeaponAmmoType
     UNLIMITED = 1
 }
 
-public class RZWeapon : PunBehaviour
+public class RZWeapon : RZPickup
 {
     public bool IsPickedUp { get; private set; }
 
@@ -53,8 +53,8 @@ public class RZWeapon : PunBehaviour
         }
     }
 
-    protected virtual void OnTriggerEnter(Collision other)
-    {
+    //protected virtual void OnTriggerEnter(Collision other)
+    //{
         
-    }
+    //}
 }

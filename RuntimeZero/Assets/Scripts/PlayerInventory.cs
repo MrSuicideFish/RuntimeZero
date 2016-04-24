@@ -57,6 +57,12 @@ public class PlayerInventory : PunBehaviour
             Debug.LogError( "Weapon ID: (" + weaponTypeId + ") doesn't exist." );
     }
 
+    [PunRPC]
+    public void SwitchWeapon(int weaponIdx)
+    {
+        
+    }
+
     public void Fire(int fireModeNum)
     {
         if (CurrentWeapon != null)
