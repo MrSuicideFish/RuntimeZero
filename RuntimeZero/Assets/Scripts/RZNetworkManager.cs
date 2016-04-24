@@ -21,24 +21,21 @@ public class RZNetworkManager : PunBehaviour
 
     #region Flags
     public bool DebugMode = false;
-
     #endregion
 
     #region Events
-
     public delegate void NetworkStateChange( int newNetworkState );
     public static event NetworkStateChange OnNetworkStateChanged;
-
     #endregion
 
     #region Session Information
+    public string MultiplayerLevelToLoad = "GenericArenaTest";
     public static int NetworkState { get; private set; }
     public static string LoadedLevelName { get; private set; }
     public static RZGameMode LoadedGameMode { get; private set; }
     #endregion
 
     #region Player Session Information
-
     public static Hashtable PlayerPropertiesHash = new Hashtable( )
     {
         {"IsReady", "false"}
@@ -109,6 +106,7 @@ public class RZNetworkManager : PunBehaviour
             {
                 stream.SendNext( NetworkState );
                 stream.SendNext( LoadedLevelName );
+                stream.SendNext( MultiplayerLevelToLoad );
             }
         }
         //Reading
@@ -118,6 +116,7 @@ public class RZNetworkManager : PunBehaviour
             {
                 NetworkState = ( int )stream.ReceiveNext( );
                 LoadedLevelName = ( string )stream.ReceiveNext( );
+                MultiplayerLevelToLoad = (string) stream.ReceiveNext();
             }
         }
     }
@@ -188,7 +187,7 @@ public class RZNetworkManager : PunBehaviour
         }
 
         //Load generic level for now
-        LoadScreen.LevelToLoad = "Malcolm_CSG_Chunks";
+        LoadScreen.LevelToLoad = MultiplayerLevelToLoad;
         LoadScreen.LevelFinishedLoadingAction = new UnityAction<string>( OnNetworkLevelHasLoaded );
         PhotonNetwork.LoadLevel( "LoadingScene" );
     }
