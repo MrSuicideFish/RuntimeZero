@@ -108,6 +108,9 @@ public class RZGameMode : PunBehaviour
     public virtual void StartRound()
     {
         print( "Starting Round..." );
+
+        //Spawn players
+        RZSpawnPoint.SpawnPlayer(PhotonNetwork.player);
     }
 
     [PunRPC]

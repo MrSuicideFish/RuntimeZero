@@ -225,7 +225,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   DebugMode: 1
-  MultiplayerLevelToLoad: GenericArenaTest
+  MultiplayerLevelToLoad: Malcolm_CSG_Chunks
 --- !u!4 &282675908
 Transform:
   m_ObjectHideFlags: 0
