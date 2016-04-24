@@ -11,7 +11,7 @@ public class RZGameMode : PunBehaviour
     public static RZGameMode Current;
 
     protected string GameModeName = "Default Game Mode";
-
+    
     protected int   MinimumNumPlayers = 0,
                     MaximumNumPlayers = 10,
                     NumOfTeams = 1;

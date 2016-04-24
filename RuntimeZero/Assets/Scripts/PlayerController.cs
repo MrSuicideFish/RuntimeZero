@@ -6,6 +6,8 @@ using UnityEngine.UI;
 [RequireComponent(typeof(CharacterController))]
 public class PlayerController : PunBehaviour
 {
+    private static PlayerController LocalPlayerController;
+
     /// <summary>
     /// Input Variables
     /// </summary>
@@ -18,6 +20,7 @@ public class PlayerController : PunBehaviour
     private Camera PlayerCamera;
     private PhotonView PhotonViewComponent;
     private CharacterController CharacterControllerComponent;
+    private Canvas PlayerHUD;
 
     //Camera properties
     public bool CameraBobEnabled = true,
@@ -58,7 +61,11 @@ public class PlayerController : PunBehaviour
         {
             if (PhotonViewComponent.isMine)
             {
+                //load hud
+                PlayerHUD =
+                    GameObject.Instantiate(Resources.Load<GameObject>("HUDs/DeathmatchHUD")).GetComponent<Canvas>();
 
+                LocalPlayerController = this;
             }
             else
             {
