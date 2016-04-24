@@ -48,7 +48,7 @@ Transform:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 149528}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -2.3516285, y: 2, z: -5.1964664}
+  m_LocalPosition: {x: 9.044642, y: 0.64042306, z: -6.0484734}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 423118}
@@ -169,8 +169,8 @@ MonoBehaviour:
   ObservedComponents:
   - {fileID: 11472328}
   ObservedComponentsFoldoutOpen: 1
-  viewIdField: 0
-  instantiationId: -1
+  viewIdField: 1
+  instantiationId: 1
   isRuntimeInstantiated: 0
 --- !u!114 &11459162
 MonoBehaviour:
@@ -265,7 +265,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 25e44708ec01bf145a8a90080daf0a11, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  NumTiles: 250
+  NumTiles: 275
   EdgeColor: {r: 1, g: 1, b: 1, a: 1}
   Threshold: 0.3
 --- !u!124 &12439886
