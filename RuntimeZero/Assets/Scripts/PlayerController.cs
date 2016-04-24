@@ -21,30 +21,39 @@ public class PlayerController : PunBehaviour
     private CharacterController CharacterControllerComponent;
 
     //Camera properties
-    public bool CameraBobEnabled = false,
+    public bool CameraBobEnabled = true,
                 GravityEnabled = true;
 
     public float
-        CameraHeight = 5.0f,
-        MoveSpeed = 10.0f,
-        MaxSpeedMagnitude = 1.0f,
-        LookSensitivity = 1.0f,
-        MinLookAngle = 0.0f,
-        MaxLookAngle = 60.0f,
-        CameraBobSpeed = 1.0f,
-        CameraBobAmount = 1.0f;
+        CameraHeight = 0.7f,
+        MoveSpeed = 13,
+        MaxSpeedMagnitude = 300,
+        LookSensitivity = 6000,
+        LookClampVal = 3500,
+        CameraBobSpeed = 11,
+        CameraBobAmount = 0.07f;
 
-    void Start( )
+    void OnPhotonInstantiate( PhotonMessageInfo info )
     {
         InitializePlayer( );
     }
 
     void InitializePlayer( )
     {
-        CharacterControllerComponent = GetComponent<CharacterController>( );
+        print( "Instantiate" );
+
         PhotonViewComponent = GetComponent<PhotonView>( );
+        CharacterControllerComponent = GetComponent<CharacterController>( );
         PlayerCamera = transform.GetChild( 0 ).GetComponent<Camera>( );
-        Cursor.visible = false;
+
+        if ( PhotonViewComponent.isMine )
+        {
+        }
+        else
+        {
+            PlayerCamera.enabled = false;
+            this.enabled = false;
+        }
     }
 
     void FixedUpdate( )
@@ -53,7 +62,11 @@ public class PlayerController : PunBehaviour
         LookXAngle += Input.GetAxis("Mouse X")*LookSensitivity*Time.deltaTime;
         LookYAngle -= Input.GetAxis("Mouse Y")*LookSensitivity*Time.deltaTime;
 
-        //LookYAngle = Mathf.Clamp(LookXAngle, MinLookAngle, MaxLookAngle);
+        if (LookYAngle > LookClampVal )
+            LookYAngle = LookClampVal;
+
+        if (LookYAngle < -LookClampVal )
+            LookYAngle = -LookClampVal;
 
         /*************
         /*Locomotion
@@ -97,4 +110,6 @@ public class PlayerController : PunBehaviour
         //Rotation
         PlayerCamera.transform.eulerAngles = new Vector3( LookYAngle, LookXAngle, 0 ) * Time.deltaTime;
     }
+
+
 }
