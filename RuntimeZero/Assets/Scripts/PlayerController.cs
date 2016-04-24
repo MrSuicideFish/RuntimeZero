@@ -33,17 +33,27 @@ public class PlayerController : PunBehaviour
         CameraBobSpeed = 11,
         CameraBobAmount = 0.07f;
 
-    void Start( )
+    void OnPhotonInstantiate( PhotonMessageInfo info )
     {
         InitializePlayer( );
     }
 
     void InitializePlayer( )
     {
-        CharacterControllerComponent = GetComponent<CharacterController>( );
+        print( "Instantiate" );
+
         PhotonViewComponent = GetComponent<PhotonView>( );
+        CharacterControllerComponent = GetComponent<CharacterController>( );
         PlayerCamera = transform.GetChild( 0 ).GetComponent<Camera>( );
-        Cursor.visible = false;
+
+        if ( PhotonViewComponent.isMine )
+        {
+        }
+        else
+        {
+            PlayerCamera.enabled = false;
+            this.enabled = false;
+        }
     }
 
     void FixedUpdate( )
@@ -100,4 +110,6 @@ public class PlayerController : PunBehaviour
         //Rotation
         PlayerCamera.transform.eulerAngles = new Vector3( LookYAngle, LookXAngle, 0 ) * Time.deltaTime;
     }
+
+
 }

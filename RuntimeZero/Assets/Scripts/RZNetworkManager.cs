@@ -184,10 +184,11 @@ public class RZNetworkManager : PunBehaviour
         if ( PhotonNetwork.isMasterClient )
         {
             SetNetworkState( ( int )NETWORK_STATE.GAME );
+            photonView.RPC( "SetGameMode", PhotonTargets.AllBuffered, 0 );
         }
 
         //Load generic level for now
-        LoadScreen.LevelToLoad = "GenericArenaTest";
+        LoadScreen.LevelToLoad = "Malcolm_CSG_Chunks";
         LoadScreen.LevelFinishedLoadingAction = new UnityAction<string>( OnNetworkLevelHasLoaded );
         PhotonNetwork.LoadLevel( "LoadingScene" );
     }
@@ -225,7 +226,7 @@ public class RZNetworkManager : PunBehaviour
 
                 if ( PhotonNetwork.isMasterClient )
                 {
-                    photonView.RPC("SetGameMode", PhotonTargets.AllBuffered, 0);
+
                 }
 
                 break;

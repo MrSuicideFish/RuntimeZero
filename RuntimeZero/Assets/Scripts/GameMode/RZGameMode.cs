@@ -73,18 +73,21 @@ public class RZGameMode : PunBehaviour
 
     public virtual void OnGUI()
     {
-        GUIStyle style = new GUIStyle();
-        style.fontSize = 75;
-
-        if (WaitingForReadyPlayers)
+        if (LoadScreen.LevelIsLoaded)
         {
-            GUI.Label(new Rect(Screen.width/2, Screen.height/2, 500, 500), "Waiting For Players...");
+            GUIStyle style = new GUIStyle();
+            style.fontSize = 75;
 
-            //if (PhotonNetwork.isMasterClient && GUI.Button( new Rect( Screen.width / 2, 0, 300, 128 ), "Start Game" ) )
-            //{
-            //    photonView.RPC( "StartRound", PhotonTargets.AllBufferedViaServer );
-            //    WaitingForReadyPlayers = false;
-            //}
+            if (WaitingForReadyPlayers)
+            {
+                GUI.Label(new Rect(Screen.width/2, Screen.height/2, 500, 500), "Waiting For Players...");
+
+                //if (PhotonNetwork.isMasterClient && GUI.Button( new Rect( Screen.width / 2, 0, 300, 128 ), "Start Game" ) )
+                //{
+                //    photonView.RPC( "StartRound", PhotonTargets.AllBufferedViaServer );
+                //    WaitingForReadyPlayers = false;
+                //}
+            }
         }
     }
 
