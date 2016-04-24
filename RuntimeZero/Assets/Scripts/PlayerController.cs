@@ -3,7 +3,6 @@ using System.Collections;
 using Photon;
 using UnityEngine.UI;
 
-[ExecuteInEditMode]
 [RequireComponent(typeof(CharacterController))]
 public class PlayerController : PunBehaviour
 {
@@ -22,7 +21,8 @@ public class PlayerController : PunBehaviour
 
     //Camera properties
     public bool CameraBobEnabled = true,
-                GravityEnabled = true;
+        GravityEnabled = true,
+        OfflineMode = false;
 
     public float
         CameraHeight = 0.7f,
@@ -35,7 +35,7 @@ public class PlayerController : PunBehaviour
 
     void Start()
     {
-        if (!PhotonNetwork.connectedAndReady)
+        if ( OfflineMode )
         {
             InitializePlayer();
         }    
@@ -54,13 +54,17 @@ public class PlayerController : PunBehaviour
         CharacterControllerComponent = GetComponent<CharacterController>( );
         PlayerCamera = transform.GetChild( 0 ).GetComponent<Camera>( );
 
-        if ( PhotonViewComponent.isMine )
+        if (!OfflineMode)
         {
-        }
-        else
-        {
-            PlayerCamera.enabled = false;
-            this.enabled = false;
+            if (PhotonViewComponent.isMine)
+            {
+
+            }
+            else
+            {
+                PlayerCamera.enabled = false;
+                this.enabled = false;
+            }
         }
     }
 
