@@ -44,4 +44,5 @@ MonoBehaviour:
   - SetGameMode
   - SpawnPlayer
   - GiveWeapon
+  - SwitchWeapon
   DisableAutoOpenWizard: 1
