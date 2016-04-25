@@ -181,6 +181,7 @@ GameObject:
   - 4: {fileID: 282675908}
   - 114: {fileID: 282675907}
   - 114: {fileID: 282675906}
+  - 114: {fileID: 282675909}
   m_Layer: 0
   m_Name: NETWORKMANAGER
   m_TagString: Untagged
@@ -238,6 +239,23 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 2
+--- !u!114 &282675909
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 282675905}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 49a81ce8037f41540ac70f51e9a19d7f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  SecondsBeforeRespawn: 2
+  PickupOnTrigger: 0
+  PickupIsMine: 0
+  OnPickedUpCall: {fileID: 0}
+  SentPickup: 0
+  TimeOfRespawn: 0
 --- !u!1 &811493481
 GameObject:
   m_ObjectHideFlags: 0

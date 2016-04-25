@@ -35,6 +35,12 @@ public class RZNetworkManager : PunBehaviour
     public static RZGameMode LoadedGameMode { get; private set; }
     #endregion
 
+    #region Local References
+    public static GameModeUI LocalHUD;
+    public static PlayerController LocalController;
+    public static PlayerInventory LocalInventory;
+    #endregion
+
     #region Player Session Information
     public static Hashtable PlayerPropertiesHash = new Hashtable( )
     {

@@ -4,14 +4,15 @@ using Photon;
 
 public class PlayerInventory : PunBehaviour
 {
-    private int InventoryIndex = 0;
+    public int EquippedIndex { get; private set; }
+    public bool IsSwitchingWeapons { get; private set; }
 
-    public RZWeapon CurrentWeapon { get; private set; }
-    public RZWeapon[] PlayerWeapons { get; private set; }
+    public RZWeapon[] Weapons { get; private set; }
 
     private PhotonView PhotonViewComponent;
 
-    public static PlayerInventory CurrentInventory { get; private set; }
+    public delegate void InventoryChangeDelegate(PhotonPlayer player);
+    public event InventoryChangeDelegate OnPlayerSwitchWeapons;
 
     protected virtual void OnPhotonSerializeView( PhotonStream stream, PhotonMessageInfo info )
     {
@@ -20,7 +21,7 @@ public class PlayerInventory : PunBehaviour
         {
             if ( PhotonNetwork.isMasterClient )
             {
-
+                stream.SendNext(EquippedIndex);
             }
         }
 
@@ -29,7 +30,7 @@ public class PlayerInventory : PunBehaviour
         {
             if ( !PhotonNetwork.isMasterClient )
             {
-
+                EquippedIndex = (int) stream.ReceiveNext();
             }
         }
     }
@@ -37,10 +38,11 @@ public class PlayerInventory : PunBehaviour
     void OnPhotonInstantiate( PhotonMessageInfo info )
     {
         PhotonViewComponent = GetComponent<PhotonView>();
+        Weapons = new RZWeapon[0];
 
         if ( PhotonViewComponent.isMine )
         {
-            CurrentInventory = this;
+            RZNetworkManager.LocalInventory = this;
         }
         else
         {
@@ -49,25 +51,45 @@ public class PlayerInventory : PunBehaviour
     }
 
     [PunRPC]
-    public void GiveWeapon( int weaponTypeId )
+    public void GiveWeapon( int weaponTypeId, PhotonMessageInfo msgInfo )
     {
         eGlobalWeaponType weaponType = (eGlobalWeaponType) weaponTypeId;
 
-        if ( weaponType == eGlobalWeaponType.NONE)
-            Debug.LogError( "Weapon ID: (" + weaponTypeId + ") doesn't exist." );
+        if ( PhotonViewComponent.owner == msgInfo.sender )
+        {
+            RZWeapon[] newWeaponInv = new RZWeapon[Weapons.Length + 1];
+
+            //Decipher weapon
+            switch ( weaponType )
+            {
+                case eGlobalWeaponType.SHOTGUN:
+                    RZWeapon_Shotgun newShotgun = gameObject.AddComponent<RZWeapon_Shotgun>();
+                    newWeaponInv[newWeaponInv.Length - 1] = newShotgun;
+                break;
+            }
+            
+            Weapons = newWeaponInv;
+        }
+
+        print( "Player: " + msgInfo.sender.ID + " picked up: " + weaponType);
     }
 
     [PunRPC]
-    public void SwitchWeapon(int weaponIdx)
+    public void EquipWeapon( int idx, PhotonMessageInfo msgInfo )
     {
-        
-    }
-
-    public void Fire(int fireModeNum)
-    {
-        if (CurrentWeapon != null)
+        if ( PhotonViewComponent.owner == msgInfo.sender )
         {
+            idx = idx%Weapons.Length;
             
+            EquippedIndex = idx;
+            IsSwitchingWeapons = true;
+
+            if (OnPlayerSwitchWeapons != null)
+            {
+                OnPlayerSwitchWeapons( PhotonViewComponent.owner );
+            }
         }
+
+        print( "Player: " + msgInfo.sender.ID + " switched to weapon: " + idx );
     }
 }

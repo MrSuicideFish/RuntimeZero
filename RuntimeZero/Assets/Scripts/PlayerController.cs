@@ -1,28 +1,29 @@
 ﻿using UnityEngine;
 using System.Collections;
+using JetBrains.Annotations;
 using Photon;
 using UnityEngine.UI;
 
 [RequireComponent(typeof(CharacterController))]
 public class PlayerController : PunBehaviour
 {
+    //Static reference to local
     private static PlayerController LocalPlayerController;
 
-    /// <summary>
-    /// Input Variables
-    /// </summary>
+    #region Internal Components
+    public Camera PlayerCamera { get; private set; }
+    public PhotonView PhotonViewComponent { get; private set; }
+    public CharacterController CharacterControllerComponent { get; private set; }
+    public PlayerInventory Inventory { get; private set; }
+    #endregion
+
+    #region Camera / Locomotion Propeties
     private Vector3 MoveDirection;
     private Vector3 LookDirection;
 
     private float LookXAngle,
-                    LookYAngle;
+                LookYAngle;
 
-    private Camera PlayerCamera;
-    private PhotonView PhotonViewComponent;
-    private CharacterController CharacterControllerComponent;
-    private Canvas PlayerHUD;
-
-    //Camera properties
     public bool CameraBobEnabled = true,
         GravityEnabled = true,
         OfflineMode = false;
@@ -36,6 +37,22 @@ public class PlayerController : PunBehaviour
         LookClampVal = 3500,
         CameraBobSpeed = 11,
         CameraBobAmount = 0.07f;
+    #endregion
+
+    public static PlayerController GetLocalPlayerController()
+    {
+        PlayerController[] allControllers = GameObject.FindObjectsOfType<PlayerController>();
+        foreach (PlayerController PC in allControllers)
+        {
+            if (PC.PhotonViewComponent.isMine)
+            {
+                LocalPlayerController = PC;
+                return LocalPlayerController;
+            }
+        }
+
+        return null;
+    }
 
     void Start()
     {
@@ -52,21 +69,20 @@ public class PlayerController : PunBehaviour
 
     void InitializePlayer( )
     {
-        print( "Instantiate" );
-
         PhotonViewComponent = GetComponent<PhotonView>( );
         CharacterControllerComponent = GetComponent<CharacterController>( );
         PlayerCamera = transform.GetChild( 0 ).GetComponent<Camera>( );
+        Inventory = GetComponent<PlayerInventory>();
 
         if (!OfflineMode)
         {
             if (PhotonViewComponent.isMine)
             {
                 //load hud
-                PlayerHUD =
-                    GameObject.Instantiate(Resources.Load<GameObject>("HUDs/DeathmatchHUD")).GetComponent<Canvas>();
+                RZNetworkManager.LocalHUD =
+                    GameObject.Instantiate(Resources.Load<GameObject>("HUDs/DeathmatchHUD")).GetComponent<GameModeUI>();
 
-                LocalPlayerController = this;
+                RZNetworkManager.LocalController = this;
             }
             else
             {
@@ -129,7 +145,22 @@ public class PlayerController : PunBehaviour
 
         //Rotation
         PlayerCamera.transform.eulerAngles = new Vector3( LookYAngle, LookXAngle, 0 ) * Time.deltaTime;
+
+        /*************
+        /*GAMEPLAY
+        /*************/
+
+        //CHEAT - give shotgun
+        if (Input.GetKeyDown(KeyCode.I))
+        {
+            PhotonViewComponent.RPC("GiveWeapon", PhotonTargets.AllViaServer, 1);
+        }
+
+        //Weapon switch
+        float scrollDir = Input.GetAxis("Mouse ScrollWheel");
+        if ( scrollDir != 0)
+        {
+            PhotonViewComponent.RPC( "EquipWeapon", PhotonTargets.AllViaServer, (int) (Inventory.EquippedIndex + scrollDir));
+        }
     }
-
-
 }

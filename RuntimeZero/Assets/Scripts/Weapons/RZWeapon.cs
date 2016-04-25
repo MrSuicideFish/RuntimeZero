@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 using Photon;
+using UnityEngine.UI;
 
 public enum eGlobalWeaponType
 {
@@ -18,12 +19,18 @@ public enum eWeaponAmmoType
 
 public class RZWeapon : RZPickup
 {
-    public bool IsPickedUp { get; private set; }
+    public bool IsPickedUp { get; protected set; }
+    public bool IsEquippedAndReady { get; protected set; }
+    public eGlobalWeaponType WeaponType { get; protected set; }
 
-    public int WeaponType = 0;
-    public int AmmoType = 0;
+    public Sprite WeaponGraphic;
+    public Animation WeaponAnimComponent;
     public int AmmoCount = 0;
 
+    //Extern Components
+    private Image ScreenGraphic;
+
+    //Intern Components
     private BoxCollider ColliderComponent;
 
     //Sync weapon with server
@@ -35,26 +42,28 @@ public class RZWeapon : RZPickup
             if ( PhotonNetwork.isMasterClient )
             {
                 stream.SendNext( IsPickedUp );
-                stream.SendNext( WeaponType );
-                stream.SendNext( AmmoType );
                 stream.SendNext( AmmoCount );
             }
         }
+
         //Reading
         else if ( stream.isReading )
         {
             if ( !PhotonNetwork.isMasterClient )
             {
                 IsPickedUp = ( bool )stream.ReceiveNext( );
-                WeaponType = ( int )stream.ReceiveNext( );
-                AmmoType = ( int )stream.ReceiveNext( );
                 AmmoCount = ( int )stream.ReceiveNext( );
             }
         }
     }
 
-    //protected virtual void OnTriggerEnter(Collision other)
-    //{
-        
-    //}
+    protected override void OnPickup()
+    {
+        Equip();
+    }
+
+    public virtual void Equip()
+    {
+
+    }
 }

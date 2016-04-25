@@ -21,6 +21,16 @@ public class RZGameMode : PunBehaviour
     protected bool  TeamsEnabled = false,
                     WaitingForReadyPlayers = true;
 
+    #region Events
+
+    public delegate void GameStateDelegate();
+    public event GameStateDelegate OnGameStart;
+    public event GameStateDelegate OnRoundStart;
+    public event GameStateDelegate OnRoundEnd;
+    public event GameStateDelegate OnGameEnd;
+
+    #endregion
+
     protected virtual void OnPhotonSerializeView( PhotonStream stream, PhotonMessageInfo info )
     {
         //Writing
@@ -102,6 +112,9 @@ public class RZGameMode : PunBehaviour
         {
             print( "Starting Game mode on Client" + GameModeName );
         }
+
+        if (OnGameStart != null)
+            OnGameStart( );
     }
 
     [PunRPC]
@@ -111,17 +124,28 @@ public class RZGameMode : PunBehaviour
 
         //Spawn players
         RZSpawnPoint.SpawnPlayer(PhotonNetwork.player);
+
+        if ( OnRoundStart != null )
+            OnRoundStart( );
     }
 
     [PunRPC]
     public virtual void EndRound()
     {
         print( "Ending Round..." );
+
+
+        if ( OnRoundEnd != null )
+            OnRoundEnd( );
     }
 
     [PunRPC]
     public virtual void EndGame()
     {
         print("Ending Game...");
+
+
+        if ( OnGameEnd != null )
+            OnGameEnd( );
     }
 }
