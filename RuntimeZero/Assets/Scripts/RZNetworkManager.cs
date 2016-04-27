@@ -40,7 +40,17 @@ public interface ICustomNetworkObject
 public sealed class RZNetworkManager : PunBehaviour
 {
     //Singleton
-    public static RZNetworkManager Session { get; private set; }
+    private static RZNetworkManager session;
+    public static RZNetworkManager Session
+    {
+        get
+        {
+            if (session == null)
+                session = GameObject.FindGameObjectWithTag("NetworkManager").GetComponent<RZNetworkManager>();
+
+            return session;
+        }
+    }
 
     #region Flags
     public bool DebugMode = false;
@@ -198,13 +208,19 @@ public sealed class RZNetworkManager : PunBehaviour
     #region Start / Update
     void Awake( )
     {
-        if ( !Session )
-            Session = this;
+        if (session == null &&
+            Session != null)
+        {
+            DontDestroyOnLoad(gameObject);
+        }
+        else
+        {
+            GameObject.Destroy(gameObject);
+        }
     }
 
     void Start( )
     {
-        DontDestroyOnLoad( gameObject );
         SetNetworkState( NETWORK_STATE.DISCONNECTED.GetHashCode( ) );
         Initialize( );
     }
