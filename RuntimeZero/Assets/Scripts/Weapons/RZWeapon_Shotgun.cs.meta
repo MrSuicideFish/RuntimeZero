@@ -1,10 +1,12 @@
 fileFormatVersion: 2
-guid: 5195aa2e5d1294d4eb80eaf3d35f9cbf
-timeCreated: 1461514265
+guid: 41acaab4688a3834888a1440611587d8
+timeCreated: 1461559693
 licenseType: Free
 MonoImporter:
   serializedVersion: 2
-  defaultReferences: []
+  defaultReferences:
+  - WeaponGraphic: {fileID: 21300004, guid: 6eedfc74195a44648b72bcf755811a88, type: 3}
+  - WeaponAnimComponent: {instanceID: 0}
   executionOrder: 0
   icon: {instanceID: 0}
   userData: 

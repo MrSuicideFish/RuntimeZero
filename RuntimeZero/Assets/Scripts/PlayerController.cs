@@ -1,31 +1,44 @@
 ﻿using UnityEngine;
 using System.Collections;
+using JetBrains.Annotations;
 using Photon;
 using UnityEngine.UI;
+
+public enum eDamageType
+{
+    MELEE = 0,
+    SHOT = 1,
+    FALL = 2,
+    BURN = 3,
+    EXPLODE = 4,
+    SHOCK = 5,
+    ACID = 6,
+}
 
 [RequireComponent(typeof(CharacterController))]
 public class PlayerController : PunBehaviour
 {
+    //Static reference to local
     private static PlayerController LocalPlayerController;
 
-    /// <summary>
-    /// Input Variables
-    /// </summary>
+    #region Internal Components
+    public Camera PlayerCamera { get; private set; }
+    public PhotonView PhotonViewComponent { get; private set; }
+    public CharacterController CharacterControllerComponent { get; private set; }
+    public PlayerInventory Inventory { get; private set; }
+    #endregion
+
+    #region Camera / Locomotion Propeties
     private Vector3 MoveDirection;
     private Vector3 LookDirection;
 
     private float LookXAngle,
-                    LookYAngle;
+                LookYAngle;
 
-    private Camera PlayerCamera;
-    private PhotonView PhotonViewComponent;
-    private CharacterController CharacterControllerComponent;
-    private Canvas PlayerHUD;
-
-    //Camera properties
     public bool CameraBobEnabled = true,
         GravityEnabled = true,
-        OfflineMode = false;
+        OfflineMode = false,
+        AutoPickupEnabled = true;
 
     public float
         CameraHeight = 0.7f,
@@ -36,6 +49,27 @@ public class PlayerController : PunBehaviour
         LookClampVal = 3500,
         CameraBobSpeed = 11,
         CameraBobAmount = 0.07f;
+    #endregion
+
+    #region Player Status
+    public int PlayerHealth { get; private set; }
+    public int PlayerArmor { get; private set; }
+    #endregion
+
+    public static PlayerController GetLocalPlayerController()
+    {
+        PlayerController[] allControllers = GameObject.FindObjectsOfType<PlayerController>();
+        foreach (PlayerController PC in allControllers)
+        {
+            if (PC.PhotonViewComponent.isMine)
+            {
+                LocalPlayerController = PC;
+                return LocalPlayerController;
+            }
+        }
+
+        return null;
+    }
 
     void Start()
     {
@@ -52,21 +86,20 @@ public class PlayerController : PunBehaviour
 
     void InitializePlayer( )
     {
-        print( "Instantiate" );
-
         PhotonViewComponent = GetComponent<PhotonView>( );
         CharacterControllerComponent = GetComponent<CharacterController>( );
         PlayerCamera = transform.GetChild( 0 ).GetComponent<Camera>( );
+        Inventory = GetComponent<PlayerInventory>();
 
         if (!OfflineMode)
         {
             if (PhotonViewComponent.isMine)
             {
                 //load hud
-                PlayerHUD =
-                    GameObject.Instantiate(Resources.Load<GameObject>("HUDs/DeathmatchHUD")).GetComponent<Canvas>();
+                RZNetworkManager.LocalHUD =
+                    GameObject.Instantiate(Resources.Load<GameObject>("HUDs/DeathmatchHUD")).GetComponent<GameModeUI>();
 
-                LocalPlayerController = this;
+                RZNetworkManager.LocalController = this;
             }
             else
             {
@@ -129,7 +162,65 @@ public class PlayerController : PunBehaviour
 
         //Rotation
         PlayerCamera.transform.eulerAngles = new Vector3( LookYAngle, LookXAngle, 0 ) * Time.deltaTime;
+
+        /*************
+        /*GAMEPLAY
+        /*************/
+
+        //CHEAT - give shotgun
+        if (Input.GetKeyDown(KeyCode.I))
+        {
+            Inventory.GiveWeapon(eWeaponType.SHOTGUN);
+        }
+
+        //Weapon switch
+        float scrollDir = Input.GetAxis("Mouse ScrollWheel");
+        if ( scrollDir != 0)
+        {
+            int idx = (int) (Inventory.EquippedIndex + scrollDir);
+            Inventory.EquipWeapon(idx);
+        }
+
+        //Fire
+        if (Input.GetMouseButtonDown( eWeaponFireMode.DEFAULT.GetHashCode() ) )
+        {
+            Fire( eWeaponFireMode.DEFAULT );
+        }
+
+#if UNITY_EDITOR
+        //Lock / unlock mouse (DEBUG)
+        if (Input.GetKeyDown(KeyCode.LeftControl))
+        {
+            print("Chaning cursor");
+            Cursor.visible = !Cursor.visible;
+            Cursor.lockState = CursorLockMode.Locked;
+        }
+#endif
     }
 
+    void Fire( eWeaponFireMode fireMode = eWeaponFireMode.DEFAULT )
+    {
+        //Is the equipped idx within bounds?
+        if (Inventory.CurrentWeapon != null)
+        {
+            var targetWeap = Inventory.Weapons[Inventory.EquippedIndex];
 
+            if (targetWeap != null)
+                targetWeap.Fire(fireMode);
+        }
+    }
+
+    [PunRPC]
+    void RpcDamagePlayer
+        (
+            int damage, 
+            int damageType, 
+            float hitPosX, 
+            float hitPosY, 
+            float hitPosZ, 
+            PhotonMessageInfo msgInfo
+        )
+    {
+        
+    }
 }

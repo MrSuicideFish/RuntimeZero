@@ -45,4 +45,9 @@ MonoBehaviour:
   - SpawnPlayer
   - GiveWeapon
   - SwitchWeapon
+  - Equip
+  - EquipWeapon
+  - RpcEquipWeapon
+  - RpcGiveWeapon
+  - RpcDamagePlayer
   DisableAutoOpenWizard: 1

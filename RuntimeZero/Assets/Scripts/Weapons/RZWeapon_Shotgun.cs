@@ -1,18 +1,14 @@
 ﻿using UnityEngine;
 using System.Collections;
+using System.Runtime.InteropServices;
+using ExitGames.Client.Photon;
 
 public class RZWeapon_Shotgun : RZWeapon
 {
-
-    // Use this for initialization
-    void Start( )
+    public RZWeapon_Shotgun()
+        : base()
     {
-
-    }
-
-    // Update is called once per frame
-    void Update( )
-    {
-
+        Ammo = 7;
+        WeaponGraphic = Resources.Load<Sprite>("WeaponGraphics/ShotgunGraphic");
     }
 }

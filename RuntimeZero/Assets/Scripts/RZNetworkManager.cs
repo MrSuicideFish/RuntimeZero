@@ -1,11 +1,20 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
+using System.Linq;
 using System.Collections;
+using System.Collections.Generic;
 using ExitGames.Client.Photon;
 using Photon;
 using UnityEngine.Events;
 using UnityEngine.SceneManagement;
 using Hashtable = ExitGames.Client.Photon.Hashtable;
+using System.Reflection;
 
+/// <summary>
+/// The State of the Global Network Manager.
+/// If client is connected to a Master Client, this value will return the Network State
+/// of the Master Client.
+/// </summary>
 public enum NETWORK_STATE
 {
     DISCONNECTED,
@@ -14,10 +23,34 @@ public enum NETWORK_STATE
     GAME
 }
 
-public class RZNetworkManager : PunBehaviour
+/// <summary>
+/// Interface for custom types that require members to be synced to the Master Client.
+/// </summary>
+public interface ICustomNetworkObject
+{
+    void OnRegisterNetworkObjects( );
+}
+
+/// <summary>
+/// Title: RZ-NetworkManager
+/// Global Network Manager for clients and master. 
+/// Solely responsible for syncing low-level logic across clients.
+/// DO NOT MODIFY WITHOUT MALCOLM'S CONSENT!
+/// </summary>
+public sealed class RZNetworkManager : PunBehaviour
 {
     //Singleton
-    public static RZNetworkManager Session { get; private set; }
+    private static RZNetworkManager session;
+    public static RZNetworkManager Session
+    {
+        get
+        {
+            if (session == null)
+                session = GameObject.FindGameObjectWithTag("NetworkManager").GetComponent<RZNetworkManager>();
+
+            return session;
+        }
+    }
 
     #region Flags
     public bool DebugMode = false;
@@ -35,6 +68,12 @@ public class RZNetworkManager : PunBehaviour
     public static RZGameMode LoadedGameMode { get; private set; }
     #endregion
 
+    #region Local References
+    public static GameModeUI LocalHUD;
+    public static PlayerController LocalController;
+    public static PlayerInventory LocalInventory;
+    #endregion
+
     #region Player Session Information
     public static Hashtable PlayerPropertiesHash = new Hashtable( )
     {
@@ -45,6 +84,7 @@ public class RZNetworkManager : PunBehaviour
     //1 - Player Character Reference
     #endregion
 
+    #region DEBUG DELETE ME
     //Debug
     void OnGUI( )
     {
@@ -88,59 +128,9 @@ public class RZNetworkManager : PunBehaviour
             GUILayout.EndVertical( );
         }
     }
-
-    #region Serialize
-
-    /// <summary>
-    /// Serializes important network information
-    /// (IMPORTANT STUFFS ONLY)
-    /// </summary>
-    /// <param name="stream"></param>
-    /// <param name="info"></param>
-    void OnPhotonSerializeView( PhotonStream stream, PhotonMessageInfo info )
-    {
-        //Writing
-        if ( stream.isWriting )
-        {
-            if ( PhotonNetwork.isMasterClient )
-            {
-                stream.SendNext( NetworkState );
-                stream.SendNext( LoadedLevelName );
-                stream.SendNext( MultiplayerLevelToLoad );
-            }
-        }
-        //Reading
-        else if ( stream.isReading )
-        {
-            if ( !PhotonNetwork.isMasterClient )
-            {
-                NetworkState = ( int )stream.ReceiveNext( );
-                LoadedLevelName = ( string )stream.ReceiveNext( );
-                MultiplayerLevelToLoad = (string) stream.ReceiveNext();
-            }
-        }
-    }
     #endregion
 
-    void Awake( )
-    {
-        if(!Session)
-            Session = this;
-    }
-
-    void Start( )
-    {
-        DontDestroyOnLoad( gameObject );
-        SetNetworkState( NETWORK_STATE.DISCONNECTED.GetHashCode( ) );
-        Initialize( );
-    }
-
-    void Update( )
-    {
-        if ( PhotonNetwork.isMasterClient )
-        {
-        }
-    }
+    #region Network Actions
 
     public static void Initialize( )
     {
@@ -173,6 +163,28 @@ public class RZNetworkManager : PunBehaviour
         }
     }
 
+    private static void SetNetworkState( int newNetworkState )
+    {
+        //Prepare new networkState
+        switch ( newNetworkState )
+        {
+            default:
+                print( "Reset ready" );
+                //Reset ready status        
+                PlayerPropertiesHash["IsReady"] = "false";
+                PhotonNetwork.player.SetCustomProperties( PlayerPropertiesHash );
+                break;
+        }
+
+        NetworkState = newNetworkState;
+        if ( OnNetworkStateChanged != null )
+        {
+            OnNetworkStateChanged( NetworkState );
+        }
+    }
+    #endregion
+
+    #region Game Actions
     [PunRPC]
     public void LaunchGame( )
     {
@@ -191,28 +203,67 @@ public class RZNetworkManager : PunBehaviour
         LoadScreen.LevelFinishedLoadingAction = new UnityAction<string>( OnNetworkLevelHasLoaded );
         PhotonNetwork.LoadLevel( "LoadingScene" );
     }
+    #endregion
 
-    private static void SetNetworkState( int newNetworkState )
+    #region Start / Update
+    void Awake( )
     {
-        //Prepare new networkState
-        switch ( newNetworkState )
+        if (session == null &&
+            Session != null)
         {
-            default:
-                print("Reset ready");
-                //Reset ready status        
-                PlayerPropertiesHash["IsReady"] = "false";
-                PhotonNetwork.player.SetCustomProperties(PlayerPropertiesHash);
-            break;
+            DontDestroyOnLoad(gameObject);
         }
-
-        NetworkState = newNetworkState;
-        if ( OnNetworkStateChanged != null )
+        else
         {
-            OnNetworkStateChanged( NetworkState );
+            GameObject.Destroy(gameObject);
         }
     }
 
-    #region Callbacks
+    void Start( )
+    {
+        SetNetworkState( NETWORK_STATE.DISCONNECTED.GetHashCode( ) );
+        Initialize( );
+    }
+    #endregion
+
+    #region Serialization
+    /// <summary>
+    /// Serializes important network information
+    /// (IMPORTANT STUFFS ONLY)
+    /// </summary>
+    /// <param name="stream"></param>
+    /// <param name="info"></param>
+    void OnPhotonSerializeView( PhotonStream stream, PhotonMessageInfo info )
+    {
+        //Writing
+        if ( stream.isWriting )
+        {
+            if ( PhotonNetwork.isMasterClient )
+            {
+                stream.SendNext( NetworkState );
+                stream.SendNext( LoadedLevelName );
+                stream.SendNext( MultiplayerLevelToLoad );
+            }
+        }
+        //Reading
+        else if ( stream.isReading )
+        {
+            if ( !PhotonNetwork.isMasterClient )
+            {
+                NetworkState = ( int )stream.ReceiveNext( );
+                LoadedLevelName = ( string )stream.ReceiveNext( );
+                MultiplayerLevelToLoad = (string) stream.ReceiveNext();
+            }
+        }
+    }
+    #endregion
+
+    #region Callbacks / Registration
+    public override void OnConnectedToMaster()
+    {
+        base.OnConnectedToMaster();
+    }
+
     void OnJoinedRoom( )
     {
         NETWORK_STATE state = ( NETWORK_STATE )NetworkState;
@@ -274,11 +325,6 @@ public class RZNetworkManager : PunBehaviour
         PhotonNetwork.player.SetCustomProperties( RZNetworkManager.PlayerPropertiesHash );
     }
 
-    /// <summary>
-    /// 0 - Deathmatch
-    /// 1 - Killswitch
-    /// </summary>
-    /// <param name="gameModeIdx"></param>
     [PunRPC]
     private void SetGameMode(int gameModeIdx = 0)
     {
@@ -293,7 +339,6 @@ public class RZNetworkManager : PunBehaviour
             break;
         }
     }
-
     #endregion
 
     #region Exception

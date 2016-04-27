@@ -1,11 +1,17 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
+using ExitGames.Client.Photon;
 using Photon;
+using UnityEngine.UI;
 
-public enum eGlobalWeaponType
+public enum eWeaponType
 {
     NONE = -1,
-    MACHINEGUN = 0,
+    MACHINE_GUN = 0,
     SHOTGUN = 1,
     ROCKET_LAUNCHER = 2
 }
@@ -16,45 +22,63 @@ public enum eWeaponAmmoType
     UNLIMITED = 1
 }
 
-public class RZWeapon : RZPickup
+public enum eWeaponFireMode
 {
-    public bool IsPickedUp { get; private set; }
+    DEFAULT = 0,
+    ALTERNATE = 1
+}
 
-    public int WeaponType = 0;
-    public int AmmoType = 0;
-    public int AmmoCount = 0;
+public class RZWeapon : ScriptableObject
+{
+    public int Ammo = 100;
+    public Sprite WeaponGraphic { get; protected set; }
+    public eWeaponType WeaponType = eWeaponType.NONE;
+    public eWeaponAmmoType AmmoType = eWeaponAmmoType.LIMITED;
 
-    private BoxCollider ColliderComponent;
-
-    //Sync weapon with server
-    protected virtual void OnPhotonSerializeView( PhotonStream stream, PhotonMessageInfo info )
+    #region Static GET
+    public static RZWeapon GetWeaponByType<T> () where T : RZWeapon
     {
-        //Writing
-        if ( stream.isWriting )
+        T t = ScriptableObject.CreateInstance<T>();
+        return t;
+    }
+
+    public static RZWeapon GetWeaponByEnum( int weapType )
+    {
+        eWeaponType targetType = (eWeaponType) weapType;
+
+        switch (targetType)
         {
-            if ( PhotonNetwork.isMasterClient )
-            {
-                stream.SendNext( IsPickedUp );
-                stream.SendNext( WeaponType );
-                stream.SendNext( AmmoType );
-                stream.SendNext( AmmoCount );
-            }
+                case eWeaponType.SHOTGUN:
+                   return ScriptableObject.CreateInstance<RZWeapon_Shotgun>();
+                case eWeaponType.MACHINE_GUN:
+                case eWeaponType.ROCKET_LAUNCHER:
+                break;
         }
-        //Reading
-        else if ( stream.isReading )
+
+        return null;
+    }
+    #endregion
+
+    #region Constructor
+
+    public RZWeapon( )
+    {
+        Ammo = 100;
+    }
+
+    #endregion
+
+    public void Fire( eWeaponFireMode fireMode = eWeaponFireMode.DEFAULT )
+    {
+        Debug.Log("Firing Weapon");
+
+        if (AmmoType == eWeaponAmmoType.LIMITED)
         {
-            if ( !PhotonNetwork.isMasterClient )
+            Ammo -= 1;
+            if (Ammo <= 0)
             {
-                IsPickedUp = ( bool )stream.ReceiveNext( );
-                WeaponType = ( int )stream.ReceiveNext( );
-                AmmoType = ( int )stream.ReceiveNext( );
-                AmmoCount = ( int )stream.ReceiveNext( );
+                //unequip and destroy weapon
             }
         }
     }
-
-    //protected virtual void OnTriggerEnter(Collision other)
-    //{
-        
-    //}
 }
