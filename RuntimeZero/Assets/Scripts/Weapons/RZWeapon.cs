@@ -1,12 +1,17 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
+using ExitGames.Client.Photon;
 using Photon;
 using UnityEngine.UI;
 
-public enum eGlobalWeaponType
+public enum eWeaponType
 {
     NONE = -1,
-    MACHINEGUN = 0,
+    MACHINE_GUN = 0,
     SHOTGUN = 1,
     ROCKET_LAUNCHER = 2
 }
@@ -17,53 +22,63 @@ public enum eWeaponAmmoType
     UNLIMITED = 1
 }
 
-public class RZWeapon : RZPickup
+public enum eWeaponFireMode
 {
-    public bool IsPickedUp { get; protected set; }
-    public bool IsEquippedAndReady { get; protected set; }
-    public eGlobalWeaponType WeaponType { get; protected set; }
+    DEFAULT = 0,
+    ALTERNATE = 1
+}
 
-    public Sprite WeaponGraphic;
-    public Animation WeaponAnimComponent;
-    public int AmmoCount = 0;
+public class RZWeapon : ScriptableObject
+{
+    public int Ammo = 100;
+    public Sprite WeaponGraphic { get; protected set; }
+    public eWeaponType WeaponType = eWeaponType.NONE;
+    public eWeaponAmmoType AmmoType = eWeaponAmmoType.LIMITED;
 
-    //Extern Components
-    private Image ScreenGraphic;
-
-    //Intern Components
-    private BoxCollider ColliderComponent;
-
-    //Sync weapon with server
-    protected virtual void OnPhotonSerializeView( PhotonStream stream, PhotonMessageInfo info )
+    #region Static GET
+    public static RZWeapon GetWeaponByType<T> () where T : RZWeapon
     {
-        //Writing
-        if ( stream.isWriting )
-        {
-            if ( PhotonNetwork.isMasterClient )
-            {
-                stream.SendNext( IsPickedUp );
-                stream.SendNext( AmmoCount );
-            }
-        }
-
-        //Reading
-        else if ( stream.isReading )
-        {
-            if ( !PhotonNetwork.isMasterClient )
-            {
-                IsPickedUp = ( bool )stream.ReceiveNext( );
-                AmmoCount = ( int )stream.ReceiveNext( );
-            }
-        }
+        T t = ScriptableObject.CreateInstance<T>();
+        return t;
     }
 
-    protected override void OnPickup()
+    public static RZWeapon GetWeaponByEnum( int weapType )
     {
-        Equip();
+        eWeaponType targetType = (eWeaponType) weapType;
+
+        switch (targetType)
+        {
+                case eWeaponType.SHOTGUN:
+                   return ScriptableObject.CreateInstance<RZWeapon_Shotgun>();
+                case eWeaponType.MACHINE_GUN:
+                case eWeaponType.ROCKET_LAUNCHER:
+                break;
+        }
+
+        return null;
+    }
+    #endregion
+
+    #region Constructor
+
+    public RZWeapon( )
+    {
+        Ammo = 100;
     }
 
-    public virtual void Equip()
-    {
+    #endregion
 
+    public void Fire( eWeaponFireMode fireMode = eWeaponFireMode.DEFAULT )
+    {
+        Debug.Log("Firing Weapon");
+
+        if (AmmoType == eWeaponAmmoType.LIMITED)
+        {
+            Ammo -= 1;
+            if (Ammo <= 0)
+            {
+                //unequip and destroy weapon
+            }
+        }
     }
 }
