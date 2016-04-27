@@ -63,6 +63,21 @@ public class PlayerInventory : PunBehaviour
         }
     }
 
+    private void Update()
+    {
+        if (Weapons != null)
+        {
+            //Process weapon updates
+            for (int i = 0; i < Weapons.Length; i++)
+            {
+                if (Weapons[i] != null)
+                {
+                    Weapons[i].OnWeaponUpdate();
+                }
+            }
+        }
+    }
+
     public void GiveWeapon( eWeaponType weapType )
     {
         //Find weapon slot

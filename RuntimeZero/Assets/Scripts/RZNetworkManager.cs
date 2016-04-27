@@ -45,8 +45,8 @@ public sealed class RZNetworkManager : PunBehaviour
     {
         get
         {
-            if (session == null)
-                session = GameObject.FindGameObjectWithTag("NETWORKMANAGER").GetComponent<RZNetworkManager>();
+            if ( session == null )
+                session = GameObject.FindGameObjectWithTag( "NETWORKMANAGER" ).GetComponent<RZNetworkManager>( );
 
             return session;
         }
@@ -66,6 +66,8 @@ public sealed class RZNetworkManager : PunBehaviour
     public static int NetworkState { get; private set; }
     public static string LoadedLevelName { get; private set; }
     public static RZGameMode LoadedGameMode { get; private set; }
+
+    public static float NetworkTimeSinceWorldLoad { get; private set; }
     #endregion
 
     #region Local References
@@ -208,14 +210,14 @@ public sealed class RZNetworkManager : PunBehaviour
     #region Start / Update
     void Awake( )
     {
-        if (session == null &&
-            Session != null)
+        if ( session == null &&
+            Session != null )
         {
-            DontDestroyOnLoad(gameObject);
+            DontDestroyOnLoad( gameObject );
         }
         else
         {
-            GameObject.Destroy(gameObject);
+            GameObject.Destroy( gameObject );
         }
     }
 
@@ -223,6 +225,22 @@ public sealed class RZNetworkManager : PunBehaviour
     {
         SetNetworkState( NETWORK_STATE.DISCONNECTED.GetHashCode( ) );
         Initialize( );
+    }
+
+    void Update( )
+    {
+        //Do internal updates
+        //(To be processed on MASTER_CLIENT only!)
+        if ( PhotonNetwork.connected &&
+            PhotonNetwork.inRoom &&
+            PhotonNetwork.isMasterClient )
+        {
+            if ( NetworkState == ( int )NETWORK_STATE.GAME )
+            {
+                //Increment network time
+                NetworkTimeSinceWorldLoad += Time.deltaTime;
+            }
+        }
     }
     #endregion
 
@@ -243,6 +261,7 @@ public sealed class RZNetworkManager : PunBehaviour
                 stream.SendNext( NetworkState );
                 stream.SendNext( LoadedLevelName );
                 stream.SendNext( MultiplayerLevelToLoad );
+                stream.SendNext( NetworkTimeSinceWorldLoad );
             }
         }
         //Reading
@@ -252,16 +271,17 @@ public sealed class RZNetworkManager : PunBehaviour
             {
                 NetworkState = ( int )stream.ReceiveNext( );
                 LoadedLevelName = ( string )stream.ReceiveNext( );
-                MultiplayerLevelToLoad = (string) stream.ReceiveNext();
+                MultiplayerLevelToLoad = ( string )stream.ReceiveNext( );
+                NetworkTimeSinceWorldLoad = ( float )stream.ReceiveNext( );
             }
         }
     }
     #endregion
 
     #region Callbacks / Registration
-    public override void OnConnectedToMaster()
+    public override void OnConnectedToMaster( )
     {
-        base.OnConnectedToMaster();
+        base.OnConnectedToMaster( );
     }
 
     void OnJoinedRoom( )
@@ -315,7 +335,7 @@ public sealed class RZNetworkManager : PunBehaviour
         if ( PhotonNetwork.isMasterClient )
         {
             //Start the game mode on server
-            PhotonView view = PhotonView.Get(LoadedGameMode);
+            PhotonView view = PhotonView.Get( LoadedGameMode );
             view.RPC( "StartGame", PhotonTargets.AllBuffered );
         }
 
@@ -326,17 +346,17 @@ public sealed class RZNetworkManager : PunBehaviour
     }
 
     [PunRPC]
-    private void SetGameMode(int gameModeIdx = 0)
+    private void SetGameMode( int gameModeIdx = 0 )
     {
-        switch (gameModeIdx)
+        switch ( gameModeIdx )
         {
             case 0:
-            {
+                {
                     LoadedGameMode = Session.gameObject.AddComponent<RZGameMode_Deathmatch>( );
                     Session.photonView.ObservedComponents.Add( LoadedGameMode );
                     Session.photonView.RefreshRpcMonoBehaviourCache( );
-            }
-            break;
+                }
+                break;
         }
     }
     #endregion

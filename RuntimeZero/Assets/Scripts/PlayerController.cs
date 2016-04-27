@@ -49,6 +49,8 @@ public class PlayerController : PunBehaviour
         LookClampVal = 3500,
         CameraBobSpeed = 11,
         CameraBobAmount = 0.07f;
+
+    private bool CursorLockedAndInvisible = false;
     #endregion
 
     #region Player Status
@@ -182,7 +184,7 @@ public class PlayerController : PunBehaviour
         }
 
         //Fire
-        if (Input.GetMouseButtonDown( eWeaponFireMode.DEFAULT.GetHashCode() ) )
+        if (Input.GetMouseButton( eWeaponFireMode.DEFAULT.GetHashCode() ) )
         {
             Fire( eWeaponFireMode.DEFAULT );
         }
@@ -191,9 +193,10 @@ public class PlayerController : PunBehaviour
         //Lock / unlock mouse (DEBUG)
         if (Input.GetKeyDown(KeyCode.LeftControl))
         {
-            print("Chaning cursor");
-            Cursor.visible = !Cursor.visible;
-            Cursor.lockState = CursorLockMode.Locked;
+            CursorLockedAndInvisible = !CursorLockedAndInvisible;
+
+            Cursor.visible = CursorLockedAndInvisible;
+            Cursor.lockState = CursorLockedAndInvisible ? CursorLockMode.Locked : CursorLockMode.None;
         }
 #endif
     }

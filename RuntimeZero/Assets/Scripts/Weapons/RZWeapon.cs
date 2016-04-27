@@ -31,27 +31,30 @@ public enum eWeaponFireMode
 public class RZWeapon : ScriptableObject
 {
     public int Ammo = 100;
+    public float ShotCooldownTime = 1.0f;
     public Sprite WeaponGraphic { get; protected set; }
     public eWeaponType WeaponType = eWeaponType.NONE;
     public eWeaponAmmoType AmmoType = eWeaponAmmoType.LIMITED;
 
+    protected bool HasFired = false;
+
     #region Static GET
-    public static RZWeapon GetWeaponByType<T> () where T : RZWeapon
+    public static RZWeapon GetWeaponByType<T>( ) where T : RZWeapon
     {
-        T t = ScriptableObject.CreateInstance<T>();
+        T t = ScriptableObject.CreateInstance<T>( );
         return t;
     }
 
     public static RZWeapon GetWeaponByEnum( int weapType )
     {
-        eWeaponType targetType = (eWeaponType) weapType;
+        eWeaponType targetType = ( eWeaponType )weapType;
 
-        switch (targetType)
+        switch ( targetType )
         {
-                case eWeaponType.SHOTGUN:
-                   return ScriptableObject.CreateInstance<RZWeapon_Shotgun>();
-                case eWeaponType.MACHINE_GUN:
-                case eWeaponType.ROCKET_LAUNCHER:
+            case eWeaponType.SHOTGUN:
+                return ScriptableObject.CreateInstance<RZWeapon_Shotgun>( );
+            case eWeaponType.MACHINE_GUN:
+            case eWeaponType.ROCKET_LAUNCHER:
                 break;
         }
 
@@ -68,16 +71,34 @@ public class RZWeapon : ScriptableObject
 
     #endregion
 
-    public void Fire( eWeaponFireMode fireMode = eWeaponFireMode.DEFAULT )
+    #region Weapon Events
+    public virtual void OnWeaponEquipped()
     {
-        Debug.Log("Firing Weapon");
+        
+    }
 
-        if (AmmoType == eWeaponAmmoType.LIMITED)
+    public virtual void OnWeaponUnequipped()
+    {
+        
+    }
+
+    public virtual void OnWeaponUpdate()
+    {
+
+    }
+    #endregion
+
+    public virtual void Fire( eWeaponFireMode fireMode = eWeaponFireMode.DEFAULT )
+    {
+        if ( HasFired || Ammo <= 0 ) return;
+
+        if ( AmmoType == eWeaponAmmoType.LIMITED )
         {
             Ammo -= 1;
-            if (Ammo <= 0)
+            if ( Ammo <= 0 )
             {
                 //unequip and destroy weapon
+                return;
             }
         }
     }
