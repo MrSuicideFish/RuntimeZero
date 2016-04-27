@@ -132,6 +132,10 @@ Prefab:
       propertyPath: instantiationId
       value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: 123876, guid: 2ba4402b0b9840c44b57732c7bfbc33d, type: 2}
+      propertyPath: m_TagString
+      value: NETWORKMANAGER
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: 2ba4402b0b9840c44b57732c7bfbc33d, type: 2}
   m_IsPrefabParent: 0

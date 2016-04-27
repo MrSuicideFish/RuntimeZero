@@ -46,7 +46,7 @@ public sealed class RZNetworkManager : PunBehaviour
         get
         {
             if (session == null)
-                session = GameObject.FindGameObjectWithTag("NetworkManager").GetComponent<RZNetworkManager>();
+                session = GameObject.FindGameObjectWithTag("NETWORKMANAGER").GetComponent<RZNetworkManager>();
 
             return session;
         }
