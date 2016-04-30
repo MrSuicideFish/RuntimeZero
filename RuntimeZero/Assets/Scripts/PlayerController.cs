@@ -78,7 +78,7 @@ public class PlayerController : PunBehaviour
         if ( OfflineMode )
         {
             InitializePlayer();
-        }    
+        }
     }
 
     void OnPhotonInstantiate( PhotonMessageInfo info )

@@ -66,8 +66,8 @@ public sealed class RZNetworkManager : PunBehaviour
     public static int NetworkState { get; private set; }
     public static string LoadedLevelName { get; private set; }
     public static RZGameMode LoadedGameMode { get; private set; }
-
     public static float NetworkTimeSinceWorldLoad { get; private set; }
+    
     #endregion
 
     #region Local References

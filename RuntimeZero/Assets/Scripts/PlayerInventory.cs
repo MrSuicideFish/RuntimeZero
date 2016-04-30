@@ -150,4 +150,9 @@ public class PlayerInventory : PunBehaviour
             }
         }
     }
+
+    public void DestroyWeapon()
+    {
+        
+    }
 }

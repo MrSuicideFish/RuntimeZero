@@ -31,12 +31,16 @@ public enum eWeaponFireMode
 public class RZWeapon : ScriptableObject
 {
     public int Ammo = 100;
-    public float ShotCooldownTime = 1.0f;
+    public float FireRate = 0.05f;
+
     public Sprite WeaponGraphic { get; protected set; }
     public eWeaponType WeaponType = eWeaponType.NONE;
     public eWeaponAmmoType AmmoType = eWeaponAmmoType.LIMITED;
 
+    protected float ShotCooldownTime = 1.0f;
     protected bool HasFired = false;
+
+    protected PlayerController Owner;
 
     #region Static GET
     public static RZWeapon GetWeaponByType<T>( ) where T : RZWeapon
@@ -44,7 +48,6 @@ public class RZWeapon : ScriptableObject
         T t = ScriptableObject.CreateInstance<T>( );
         return t;
     }
-
     public static RZWeapon GetWeaponByEnum( int weapType )
     {
         eWeaponType targetType = ( eWeaponType )weapType;
@@ -84,10 +87,23 @@ public class RZWeapon : ScriptableObject
 
     public virtual void OnWeaponUpdate()
     {
-
+        //Process Shot cooldown
+        if ( HasFired )
+        {
+            ShotCooldownTime -= Time.deltaTime * FireRate;
+            if ( ShotCooldownTime <= 0 )
+            {
+                ShotCooldownTime = 1.0f;
+                HasFired = false;
+            }
+        }
     }
     #endregion
 
+    /// <summary>
+    /// [RPC] Fires this weapon.
+    /// </summary>
+    /// <param name="fireMode"></param>
     public virtual void Fire( eWeaponFireMode fireMode = eWeaponFireMode.DEFAULT )
     {
         if ( HasFired || Ammo <= 0 ) return;
@@ -97,9 +113,20 @@ public class RZWeapon : ScriptableObject
             Ammo -= 1;
             if ( Ammo <= 0 )
             {
+
                 //unequip and destroy weapon
+                Owner.Inventory.DestroyWeapon( );
+
                 return;
             }
         }
+
+        HasFired = true;
+    }
+
+    public void RpcFireWeapon(int fireModeNum)
+    {
+        eWeaponFireMode mode = (eWeaponFireMode) fireModeNum;
+
     }
 }

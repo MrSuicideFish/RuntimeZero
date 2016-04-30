@@ -21,6 +21,8 @@ public class RZGameMode : PunBehaviour
     protected bool  TeamsEnabled = false,
                     WaitingForReadyPlayers = true;
 
+    public static PlayerController[] Players;
+
     #region Events
     public delegate void GameStateDelegate();
     public event GameStateDelegate OnGameStart;

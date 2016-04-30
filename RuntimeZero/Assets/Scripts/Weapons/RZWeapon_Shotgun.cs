@@ -15,8 +15,6 @@ public class RZWeapon_Shotgun : RZWeapon
     public override void OnWeaponUpdate( )
     {
         base.OnWeaponUpdate( );
-
-        Debug.Log(RZNetworkManager.NetworkTimeSinceWorldLoad);
     }
 
     public override void Fire(eWeaponFireMode fireMode = eWeaponFireMode.DEFAULT)
