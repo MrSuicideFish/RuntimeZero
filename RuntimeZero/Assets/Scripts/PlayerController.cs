@@ -40,6 +40,8 @@ public class PlayerController : PunBehaviour
         OfflineMode = false,
         AutoPickupEnabled = true;
 
+    public bool IsInitialized { get; private set; }
+
     public float
         CameraHeight = 0.7f,
         MoveSpeed = 13,
@@ -113,6 +115,8 @@ public class PlayerController : PunBehaviour
 
     void FixedUpdate( )
     {
+        if (!IsInitialized) return;
+        
         //Calculate mahf
         LookXAngle += Input.GetAxis("Mouse X")*LookSensitivity*Time.deltaTime;
         LookYAngle -= Input.GetAxis("Mouse Y")*LookSensitivity*Time.deltaTime;

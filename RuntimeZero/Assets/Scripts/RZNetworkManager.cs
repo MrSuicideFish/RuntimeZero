@@ -63,6 +63,7 @@ public sealed class RZNetworkManager : PunBehaviour
 
     #region Session Information
     public string MultiplayerLevelToLoad = "GenericArenaTest";
+    public int SessionGameMode = 0;
     public static int NetworkState { get; private set; }
     public static string LoadedLevelName { get; private set; }
     public static RZGameMode LoadedGameMode { get; private set; }
@@ -74,6 +75,35 @@ public sealed class RZNetworkManager : PunBehaviour
     public static GameModeUI LocalHUD;
     public static PlayerController LocalController;
     public static PlayerInventory LocalInventory;
+    #endregion
+
+    #region Start / Update
+    void Awake( )
+    {
+        DontDestroyOnLoad( gameObject );
+    }
+
+    void Start( )
+    {
+        SetNetworkState( NETWORK_STATE.DISCONNECTED.GetHashCode( ) );
+        Initialize( );
+    }
+
+    void Update( )
+    {
+        //Do internal updates
+        //(To be processed on MASTER_CLIENT only!)
+        if ( PhotonNetwork.connected &&
+            PhotonNetwork.inRoom &&
+            PhotonNetwork.isMasterClient )
+        {
+            if ( NetworkState == ( int )NETWORK_STATE.GAME )
+            {
+                //Increment network time
+                NetworkTimeSinceWorldLoad += Time.deltaTime;
+            }
+        }
+    }
     #endregion
 
     #region Player Session Information
@@ -197,50 +227,13 @@ public sealed class RZNetworkManager : PunBehaviour
         if ( PhotonNetwork.isMasterClient )
         {
             SetNetworkState( ( int )NETWORK_STATE.GAME );
-            photonView.RPC( "SetGameMode", PhotonTargets.AllBuffered, 0 );
+            photonView.RPC( "SetGameMode", PhotonTargets.AllBuffered, SessionGameMode );
         }
 
         //Load generic level for now
         LoadScreen.LevelToLoad = MultiplayerLevelToLoad;
         LoadScreen.LevelFinishedLoadingAction = new UnityAction<string>( OnNetworkLevelHasLoaded );
         PhotonNetwork.LoadLevel( "LoadingScene" );
-    }
-    #endregion
-
-    #region Start / Update
-    void Awake( )
-    {
-        if ( session == null &&
-            Session != null )
-        {
-            DontDestroyOnLoad( gameObject );
-        }
-        else
-        {
-            GameObject.Destroy( gameObject );
-        }
-    }
-
-    void Start( )
-    {
-        SetNetworkState( NETWORK_STATE.DISCONNECTED.GetHashCode( ) );
-        Initialize( );
-    }
-
-    void Update( )
-    {
-        //Do internal updates
-        //(To be processed on MASTER_CLIENT only!)
-        if ( PhotonNetwork.connected &&
-            PhotonNetwork.inRoom &&
-            PhotonNetwork.isMasterClient )
-        {
-            if ( NetworkState == ( int )NETWORK_STATE.GAME )
-            {
-                //Increment network time
-                NetworkTimeSinceWorldLoad += Time.deltaTime;
-            }
-        }
     }
     #endregion
 
@@ -350,14 +343,20 @@ public sealed class RZNetworkManager : PunBehaviour
     {
         switch ( gameModeIdx )
         {
+            case -1:
+                {
+                    LoadedGameMode = Session.gameObject.AddComponent<RZGameMode_DevMode>( );
+                }
+                break;
             case 0:
                 {
                     LoadedGameMode = Session.gameObject.AddComponent<RZGameMode_Deathmatch>( );
-                    Session.photonView.ObservedComponents.Add( LoadedGameMode );
-                    Session.photonView.RefreshRpcMonoBehaviourCache( );
                 }
                 break;
         }
+
+        Session.photonView.ObservedComponents.Add( LoadedGameMode );
+        Session.photonView.RefreshRpcMonoBehaviourCache( );
     }
     #endregion
 
