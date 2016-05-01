@@ -78,13 +78,9 @@ public sealed class RZNetworkManager : PunBehaviour
     #endregion
 
     #region Start / Update
-    void Awake( )
-    {
-        DontDestroyOnLoad( gameObject );
-    }
-
     void Start( )
     {
+        DontDestroyOnLoad( Session.gameObject );
         SetNetworkState( NETWORK_STATE.DISCONNECTED.GetHashCode( ) );
         Initialize( );
     }

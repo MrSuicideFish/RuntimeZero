@@ -29,7 +29,9 @@ public class PlayerController : PunBehaviour
     #endregion
 
     #region Camera / Locomotion Propeties
-    private Vector3 MoveDirection;
+    private Vector3 MoveDirection, 
+                    InternalForces;
+
     private Vector3 LookDirection;
 
     private float LookXAngle,
@@ -50,7 +52,7 @@ public class PlayerController : PunBehaviour
         LookSensitivity = 6000,
         LookClampVal = 3500,
         CameraBobSpeed = 11,
-        CameraBobAmount = 0.07f;
+        CameraBobAmount = 0.07f;    
 
     private bool CursorLockedAndInvisible = false;
     #endregion
@@ -111,6 +113,8 @@ public class PlayerController : PunBehaviour
                 this.enabled = false;
             }
         }
+
+        IsInitialized = true;
     }
 
     void FixedUpdate( )
@@ -137,6 +141,9 @@ public class PlayerController : PunBehaviour
         //transform dir
         MoveDir = transform.TransformDirection(MoveDir);
 
+        if (Input.GetKeyDown(KeyCode.Space))
+            MoveDir += new Vector3(0, 30, 0);
+
         //Position
         if ( Vector3.Distance(Vector3.zero, CharacterControllerComponent.velocity) < MaxSpeedMagnitude)
             CharacterControllerComponent.Move( MoveDir * MoveSpeed * Time.deltaTime );
@@ -150,6 +157,20 @@ public class PlayerController : PunBehaviour
         {
             CharacterControllerComponent.Move( Physics.gravity * Time.deltaTime );
         }
+
+        if(InternalForces )
+        //Dicipate internal forces
+        InternalForces.x = Mathf.Abs( InternalForces.x - 0 ) > 5
+            ? InternalForces.x + -InternalForces.x * Time.deltaTime
+            : InternalForces.x = 0;
+
+        InternalForces.y = Mathf.Abs( InternalForces.y - 0 ) > 5
+            ? InternalForces.y + -InternalForces.y * Time.deltaTime
+            : InternalForces.y = 0;
+
+        InternalForces.z = Mathf.Abs( InternalForces.z - 0 ) > 5
+            ? InternalForces.z + -InternalForces.z * Time.deltaTime
+            : InternalForces.z = 0;
 
         /*************
         /*CAMERA
@@ -203,6 +224,11 @@ public class PlayerController : PunBehaviour
             Cursor.lockState = CursorLockedAndInvisible ? CursorLockMode.Locked : CursorLockMode.None;
         }
 #endif
+    }
+
+    public void ApplyInternalForce(Vector3 localDirection)
+    {
+        InternalForces += localDirection;
     }
 
     void Fire( eWeaponFireMode fireMode = eWeaponFireMode.DEFAULT )

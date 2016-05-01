@@ -127,6 +127,5 @@ public class RZWeapon : ScriptableObject
     public void RpcFireWeapon(int fireModeNum)
     {
         eWeaponFireMode mode = (eWeaponFireMode) fireModeNum;
-
     }
 }
