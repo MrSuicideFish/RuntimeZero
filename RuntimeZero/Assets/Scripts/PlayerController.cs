@@ -6,13 +6,13 @@ using UnityEngine.UI;
 
 public enum eDamageType
 {
-    MELEE = 0,
-    SHOT = 1,
-    FALL = 2,
-    BURN = 3,
+    MELEE   = 0,
+    SHOT    = 1,
+    FALL    = 2,
+    BURN    = 3,
     EXPLODE = 4,
-    SHOCK = 5,
-    ACID = 6,
+    SHOCK   = 5,
+    ACID    = 6,
 }
 
 [RequireComponent(typeof(CharacterController))]
@@ -29,30 +29,35 @@ public class PlayerController : PunBehaviour
     #endregion
 
     #region Camera / Locomotion Propeties
-    private Vector3 MoveDirection, 
+    private Vector3 MoveDirection,
                     InternalForces;
 
-    private Vector3 LookDirection;
+    private Vector3 LookDirection,
+                    VelocityVector;
 
     private float LookXAngle,
-                LookYAngle;
+        LookYAngle,
+        JumpHoldTimer;
 
     public bool CameraBobEnabled = true,
         GravityEnabled = true,
         OfflineMode = false,
-        AutoPickupEnabled = true;
+        AutoPickupEnabled = true,
+        HasJumped = false;
 
     public bool IsInitialized { get; private set; }
 
     public float
-        CameraHeight = 0.7f,
-        MoveSpeed = 13,
-        MoveStiffness = 3.0f,
-        MaxSpeedMagnitude = 300,
-        LookSensitivity = 6000,
-        LookClampVal = 3500,
-        CameraBobSpeed = 11,
-        CameraBobAmount = 0.07f;    
+        CameraHeight    = 0.7f,
+        MoveSpeed       = 13,
+        MoveStiffness   = 3.0f,
+        JumpHeight      = 5,
+        JumpPower       = 0.2f,
+        MaxSpeedMagnitude   = 300,
+        LookSensitivity     = 6000,
+        LookClampVal        = 3500,
+        CameraBobSpeed      = 11,
+        CameraBobAmount     = 0.07f;    
 
     private bool CursorLockedAndInvisible = false;
     #endregion
@@ -103,7 +108,7 @@ public class PlayerController : PunBehaviour
             {
                 //load hud
                 RZNetworkManager.LocalHUD =
-                    GameObject.Instantiate(Resources.Load<GameObject>("HUDs/DeathmatchHUD")).GetComponent<GameModeUI>();
+                    GameObject.Instantiate(Resources.Load<GameObject>(RZNetworkManager.LoadedGameMode.GameModeHUDResourcePath)).GetComponent<GameModeUI>();
 
                 RZNetworkManager.LocalController = this;
             }
@@ -117,83 +122,97 @@ public class PlayerController : PunBehaviour
         IsInitialized = true;
     }
 
+    void Update()
+    {
+        if ( Input.GetKeyDown( KeyCode.Space ) )
+        {
+            if ( CharacterControllerComponent.isGrounded )
+            {
+                if ( !HasJumped )
+                {
+                    JumpHoldTimer = 1;
+                    HasJumped = true;
+                }
+            }
+        }
+    }
+    
     void FixedUpdate( )
     {
         if (!IsInitialized) return;
-        
-        //Calculate mahf
-        LookXAngle += Input.GetAxis("Mouse X")*LookSensitivity*Time.deltaTime;
-        LookYAngle -= Input.GetAxis("Mouse Y")*LookSensitivity*Time.deltaTime;
 
-        if (LookYAngle > LookClampVal )
-            LookYAngle = LookClampVal;
-
-        if (LookYAngle < -LookClampVal )
-            LookYAngle = -LookClampVal;
-
+        #region Locomotion Processing
         /*************
         /*Locomotion
         /*************/
-        //Calc dir
-        Vector3 MoveDir =
-            new Vector3(Input.GetAxis("Horizontal"), 0, Input.GetAxis("Vertical"))*MoveStiffness;
+        var inputVector = CharacterControllerComponent.isGrounded
+            ? new Vector3(Input.GetAxis("Horizontal"), 0, Input.GetAxis("Vertical"))*MoveSpeed*Time.deltaTime
+            : new Vector3(Input.GetAxis("Horizontal"), 0, Input.GetAxis("Vertical"))*(MoveSpeed/2)*Time.deltaTime;
 
-        //transform dir
-        MoveDir = transform.TransformDirection(MoveDir);
+        if (HasJumped)
+        {
+            //Lerp hold timer down?
+            JumpHoldTimer = Mathf.Lerp(JumpHoldTimer, 0, JumpPower );
 
-        if (Input.GetKeyDown(KeyCode.Space))
-            MoveDir += new Vector3(0, 30, 0);
+            //Apply jump power
+            VelocityVector += new Vector3( 0, JumpHeight * JumpHoldTimer, 0 ) * Time.deltaTime;
 
-        //Position
-        if ( Vector3.Distance(Vector3.zero, CharacterControllerComponent.velocity) < MaxSpeedMagnitude)
-            CharacterControllerComponent.Move( MoveDir * MoveSpeed * Time.deltaTime );
+            if ( JumpHoldTimer <= 0.001f 
+                || ( JumpHoldTimer <= 0.7f 
+                && CharacterControllerComponent.isGrounded))
+            {
+                HasJumped = false;
+            }
+        }
+
+        VelocityVector +=
+            transform.TransformDirection( inputVector );
 
         //Rotation
         transform.eulerAngles = new Vector3(transform.eulerAngles.x, PlayerCamera.transform.eulerAngles.y,
             transform.eulerAngles.z);
 
-        //Process gravity (after the fact)
-        if ( GravityEnabled )
-        {
-            CharacterControllerComponent.Move( Physics.gravity * Time.deltaTime );
-        }
+        //Process move
+        VelocityVector -= Physics.gravity*Time.deltaTime;
+        CharacterControllerComponent.Move( VelocityVector );
 
-        if(InternalForces )
-        //Dicipate internal forces
-        InternalForces.x = Mathf.Abs( InternalForces.x - 0 ) > 5
-            ? InternalForces.x + -InternalForces.x * Time.deltaTime
-            : InternalForces.x = 0;
+        VelocityVector = Vector3.Lerp(VelocityVector, Vector3.zero, MoveStiffness);
+        #endregion
 
-        InternalForces.y = Mathf.Abs( InternalForces.y - 0 ) > 5
-            ? InternalForces.y + -InternalForces.y * Time.deltaTime
-            : InternalForces.y = 0;
-
-        InternalForces.z = Mathf.Abs( InternalForces.z - 0 ) > 5
-            ? InternalForces.z + -InternalForces.z * Time.deltaTime
-            : InternalForces.z = 0;
-
+        #region Camera Processing
         /*************
         /*CAMERA
         /*************/
+        LookXAngle += Input.GetAxis( "Mouse X" ) * LookSensitivity * Time.deltaTime;
+        LookYAngle -= Input.GetAxis( "Mouse Y" ) * LookSensitivity * Time.deltaTime;
+
+        if ( LookYAngle > LookClampVal )
+            LookYAngle = LookClampVal;
+
+        if ( LookYAngle < -LookClampVal )
+            LookYAngle = -LookClampVal;
+
         var cameraOffsetPos = new Vector3( 0, CameraHeight, 0 );
 
         //Process camera bob
-        if ( CameraBobEnabled && MoveDir != Vector3.zero )
+        if ( CameraBobEnabled 
+            && CharacterControllerComponent.isGrounded 
+            && CharacterControllerComponent.velocity != Vector3.zero )
         {
             float yOffset = Mathf.Sin(Time.time*((Mathf.PI/2) * CameraBobSpeed))*CameraBobAmount;
             cameraOffsetPos.y += yOffset;
         }
 
-        //Position
+        //Camera Position
         PlayerCamera.transform.position = transform.position + cameraOffsetPos;
 
-        //Rotation
+        //Camera Rotation
         PlayerCamera.transform.eulerAngles = new Vector3( LookYAngle, LookXAngle, 0 ) * Time.deltaTime;
+#endregion
 
         /*************
         /*GAMEPLAY
         /*************/
-
         //CHEAT - give shotgun
         if (Input.GetKeyDown(KeyCode.I))
         {
@@ -224,11 +243,6 @@ public class PlayerController : PunBehaviour
             Cursor.lockState = CursorLockedAndInvisible ? CursorLockMode.Locked : CursorLockMode.None;
         }
 #endif
-    }
-
-    public void ApplyInternalForce(Vector3 localDirection)
-    {
-        InternalForces += localDirection;
     }
 
     void Fire( eWeaponFireMode fireMode = eWeaponFireMode.DEFAULT )

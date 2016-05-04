@@ -52,7 +52,7 @@ Transform:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 149528}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -17.820143, y: 2.55239, z: 5.344346}
+  m_LocalPosition: {x: -2.92, y: 16.48, z: -0.5188147}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 462512}
@@ -261,16 +261,19 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   CameraBobEnabled: 1
   GravityEnabled: 1
-  OfflineMode: 0
+  OfflineMode: 1
   AutoPickupEnabled: 1
+  HasJumped: 0
   CameraHeight: 0.7
-  MoveSpeed: 8
-  MoveStiffness: 3
+  MoveSpeed: 30
+  MoveStiffness: 10
+  JumpHeight: 60
+  JumpPower: 0.05
   MaxSpeedMagnitude: 300
   LookSensitivity: 6000
   LookClampVal: 3500
   CameraBobSpeed: 11
-  CameraBobAmount: 0.07
+  CameraBobAmount: 0
 --- !u!114 &11472328
 MonoBehaviour:
   m_ObjectHideFlags: 1

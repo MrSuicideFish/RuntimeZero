@@ -11,7 +11,8 @@ public class RZGameMode : PunBehaviour
     public static RZGameMode Current;
 
     protected string GameModeName = "Default Game Mode";
-    
+    public string GameModeHUDResourcePath = "HUDs/DeathmatchHUD";
+
     protected int   MinimumNumPlayers = 0,
                     MaximumNumPlayers = 10,
                     NumOfTeams = 1;

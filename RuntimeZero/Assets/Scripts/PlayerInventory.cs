@@ -57,10 +57,6 @@ public class PlayerInventory : PunBehaviour
         {
             RZNetworkManager.LocalInventory = this;
         }
-        else
-        {
-
-        }
     }
 
     private void Update()
