@@ -87,7 +87,7 @@ public class RZGameMode : PunBehaviour
         if (LoadScreen.LevelIsLoaded)
         {
             GUIStyle style = new GUIStyle();
-            style.fontSize = 75;
+            style.fontSize = 180;
 
             if (WaitingForReadyPlayers)
             {

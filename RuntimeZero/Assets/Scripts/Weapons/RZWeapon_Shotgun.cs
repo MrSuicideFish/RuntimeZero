@@ -23,5 +23,14 @@ public class RZWeapon_Shotgun : RZWeapon
     public override void Fire(eWeaponFireMode fireMode = eWeaponFireMode.DEFAULT)
     {
         base.Fire(fireMode);
+
+        if(fireMode == eWeaponFireMode.DEFAULT )
+        {
+
+        }
+        else
+        {
+
+        }
     }
 }

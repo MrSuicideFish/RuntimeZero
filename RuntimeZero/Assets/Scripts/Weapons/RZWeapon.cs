@@ -113,7 +113,6 @@ public class RZWeapon : ScriptableObject
             Ammo -= 1;
             if ( Ammo <= 0 )
             {
-
                 //unequip and destroy weapon
                 Owner.Inventory.DestroyWeapon( );
 
